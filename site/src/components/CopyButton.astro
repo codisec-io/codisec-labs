@@ -1,0 +1,38 @@
+---
+interface Props {
+  command: string;
+}
+const { command } = Astro.props;
+---
+<div class="cmd-block">
+  <code>{command}</code>
+  <button type="button" class="copy-btn" data-command={command}>Copiar</button>
+</div>
+
+<script>
+  function setupCopyButtons() {
+    document.querySelectorAll<HTMLButtonElement>('.copy-btn[data-command]').forEach((btn) => {
+      if (btn.dataset.wired) return;
+      btn.dataset.wired = '1';
+      btn.addEventListener('click', async () => {
+        const command = btn.dataset.command ?? '';
+        try {
+          await navigator.clipboard.writeText(command);
+          const original = btn.textContent;
+          btn.textContent = 'Copiado!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.classList.remove('copied');
+          }, 1500);
+        } catch {
+          // clipboard indisponível (ex: http sem permissão) — sem-op silencioso,
+          // o comando já está visível e selecionável no bloco.
+        }
+      });
+    });
+  }
+
+  setupCopyButtons();
+  document.addEventListener('astro:page-load', setupCopyButtons);
+</script>
