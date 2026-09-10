@@ -10,60 +10,45 @@ Retorna exit code 0 se tudo estiver válido, 1 caso contrário — é
 exatamente isso que a GitHub Action em .github/workflows/validate-labs.yml
 usa para aprovar ou barrar um Pull Request automaticamente.
 """
-import json
 import sys
 from pathlib import Path
 
-import yaml
-from jsonschema import Draft7Validator
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-ROOT = Path(__file__).resolve().parent.parent
-LABS_DIR = ROOT / "labs"
-SCHEMA_PATH = LABS_DIR / "schema.json"
+from _lab_common import iter_lab_results  # noqa: E402
 
 
 def main() -> int:
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    validator = Draft7Validator(schema)
+    results = list(iter_lab_results())
 
-    had_errors = False
-    lab_dirs = [d for d in LABS_DIR.iterdir() if d.is_dir()]
-
-    if not lab_dirs:
+    if not results:
         print("Nenhuma pasta de lab encontrada em /labs.")
         return 1
 
-    for lab_dir in sorted(lab_dirs):
-        lab_file = lab_dir / "lab.yaml"
-        if not lab_file.exists():
-            print(f"⚠️  {lab_dir.name}: pasta sem lab.yaml, pulando.")
+    had_errors = False
+    for r in results:
+        if r.skipped:
+            print(f"⚠️  {r.dir_name}: pasta sem lab.yaml, pulando.")
             continue
 
-        try:
-            data = yaml.safe_load(lab_file.read_text(encoding="utf-8"))
-        except yaml.YAMLError as e:
-            print(f"❌ {lab_dir.name}: YAML inválido — {e}")
+        if r.yaml_error is not None:
             had_errors = True
+            print(f"❌ {r.dir_name}: YAML inválido — {r.yaml_error}")
             continue
 
-        errors = sorted(validator.iter_errors(data), key=lambda e: e.path)
-        if errors:
+        if r.schema_errors:
             had_errors = True
-            print(f"❌ {lab_dir.name}: {len(errors)} erro(s) de schema:")
-            for err in errors:
-                path = ".".join(str(p) for p in err.path) or "(raiz)"
-                print(f"   - [{path}] {err.message}")
+            print(f"❌ {r.dir_name}: {len(r.schema_errors)} erro(s) de schema:")
+            for msg in r.schema_errors:
+                print(f"   - {msg}")
             continue
 
-        if data["id"] != lab_dir.name:
+        if r.id_mismatch is not None:
             had_errors = True
-            print(
-                f"❌ {lab_dir.name}: campo 'id' ({data['id']}) precisa ser "
-                f"igual ao nome da pasta ({lab_dir.name})."
-            )
+            print(f"❌ {r.dir_name}: {r.id_mismatch}")
             continue
 
-        print(f"✅ {lab_dir.name}: válido.")
+        print(f"✅ {r.dir_name}: válido.")
 
     if had_errors:
         print("\nValidação falhou — corrija os erros acima antes de abrir/mergear o PR.")
