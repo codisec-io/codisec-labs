@@ -1,0 +1,69 @@
+id: devops-cicd-local-com-act
+title: "CI/CD na Prática — Rodando GitHub Actions Localmente com act"
+category: devops
+difficulty: intermediate
+duration: 40m
+description: >
+  Um repositório com um workflow do GitHub Actions quebrado (falha nos
+  testes). Use `act` pra rodar o pipeline localmente, sem precisar de
+  push nem de esperar o CI da nuvem, debugue e corrija.
+image: ghcr.io/codisec/lab-act-cicd:latest
+tags: [github-actions, ci-cd, act, pipeline]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: []
+
+tasks:
+  - id: run-broken
+    title: "1. Rode o pipeline localmente e veja a falha"
+    theory: |
+      `act` lê o mesmo arquivo `.github/workflows/*.yml` que o GitHub
+      Actions usaria na nuvem, mas executa tudo localmente em containers
+      Docker — isso deixa o ciclo de "editei, quero saber se passa"
+      muito mais rápido que fazer push e esperar.
+    steps:
+      - "Vá para `cd /app/repo`"
+      - "Rode: `act -j test`"
+      - "Leia a saída: o job 'test' falha em algum ponto — identifique qual comando falhou."
+    validation:
+      command: "cd /app/repo && act -j test 2>&1 | grep -qi 'failure'"
+      expected_exit_code: 0
+      success_message: "Confirmado — o job de teste está falhando, como esperado."
+      error_message: "Rode `act -j test` dentro de /app/repo."
+
+  - id: diagnose
+    title: "2. Diagnostique a causa raiz"
+    theory: |
+      Workflows quebram por motivos comuns: versão errada de
+      dependência, variável de ambiente faltando, comando com path
+      errado. Ler o log linha a linha (não só o resumo final) é o que
+      resolve isso na prática.
+    steps:
+      - "Rode de novo com mais detalhe: `act -j test -v 2>&1 | tail -50`"
+      - "Neste lab, o problema é uma dependência no `requirements.txt` com versão incompatível com o código de teste."
+    validation:
+      command: "cd /app/repo && grep -q 'pytest==4' requirements.txt"
+      expected_exit_code: 0
+      success_message: "Causa raiz identificada: pytest está fixado numa versão antiga e incompatível."
+      error_message: "Verifique o conteúdo de /app/repo/requirements.txt."
+
+  - id: fix
+    title: "3. Corrija e confirme localmente antes de fazer push"
+    theory: |
+      A correção: atualizar a versão fixada da dependência. O valor de
+      rodar isso local com `act` é confirmar a correção ANTES de gastar
+      um ciclo de CI da nuvem (e antes de travar o pipeline pros seus
+      colegas de time).
+    steps:
+      - "Edite `/app/repo/requirements.txt` com `vi /app/repo/requirements.txt`."
+      - "Troque `pytest==4.6.0` por `pytest>=7.0`."
+      - "Rode `act -j test` de novo."
+    break_again_command: "cp /app/repo/requirements.txt.vulnerable /app/repo/requirements.txt"
+    validation:
+      command: "cd /app/repo && act -j test 2>&1 | grep -qi 'success'"
+      expected_exit_code: 0
+      success_message: "Pipeline passando localmente! Agora sim vale a pena fazer o push."
+      error_message: "Ainda está falhando. Confira a versão do pytest em requirements.txt."
+
+recovery:
+  reset_command: "cp /app/repo/requirements.txt.original /app/repo/requirements.txt"

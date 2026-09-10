@@ -1,0 +1,70 @@
+id: appsec-ssrf-basics
+title: "SSRF — Server-Side Request Forgery em Serviço de Preview de URL"
+category: appsec
+difficulty: intermediate
+duration: 40m
+description: >
+  Um endpoint que "gera preview de links" faz uma requisição HTTP no
+  servidor para a URL que o usuário informa. Explore como isso permite
+  acessar metadados de nuvem e serviços internos, depois corrija com
+  uma allowlist.
+image: ghcr.io/SEU_USUARIO/lab-ssrf-preview:latest
+tags: [ssrf, owasp-top10, cloud-metadata, network-security]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: [5000, 8080]
+
+tasks:
+  - id: recon
+    title: "1. Entenda o endpoint vulnerável"
+    theory: |
+      POST /preview recebe {"url": "..."} e o servidor faz um GET nessa URL
+      para extrair o <title> da página, devolvendo pro usuário. O problema:
+      não há validação de que a URL aponta pra um destino externo legítimo.
+    steps:
+      - "Rode: `curl -X POST http://localhost:5000/preview -H 'Content-Type: application/json' -d '{\"url\":\"http://example.com\"}'`"
+      - "Veja que o serviço retorna o título da página normalmente."
+    validation:
+      command: "curl -s -X POST http://localhost:5000/preview -H 'Content-Type: application/json' -d '{\"url\":\"http://example.com\"}' | grep -qi title"
+      expected_exit_code: 0
+      success_message: "Endpoint funcionando como esperado para uso legítimo."
+      error_message: "Confira se o serviço já terminou de subir e tente de novo."
+
+  - id: exploit
+    title: "2. Explore o SSRF contra um serviço interno"
+    theory: |
+      Este lab simula um serviço interno de metadados (imitando o padrão
+      de nuvens como AWS/GCP) rodando em http://169.254.169.254:8080/
+      dentro da mesma rede do container. Um servidor que aceita qualquer
+      URL do usuário pode ser usado como proxy pra alcançar esse serviço,
+      que normalmente não é acessível de fora.
+    steps:
+      - "Rode: `curl -X POST http://localhost:5000/preview -H 'Content-Type: application/json' -d '{\"url\":\"http://169.254.169.254:8080/latest/meta-data/iam-credentials\"}'`"
+      - "Observe que a resposta contém uma credencial simulada — algo que nunca deveria vazar para um usuário externo."
+    validation:
+      command: "curl -s -X POST http://localhost:5000/preview -H 'Content-Type: application/json' -d '{\"url\":\"http://169.254.169.254:8080/latest/meta-data/iam-credentials\"}' | grep -q FAKE_SECRET"
+      expected_exit_code: 0
+      success_message: "SSRF confirmado! Você usou o servidor como proxy pra vazar credenciais do serviço de metadados interno."
+      error_message: "Ainda não vazou a credencial. Confira a URL exata usada no passo anterior."
+
+  - id: fix
+    title: "3. Corrija com allowlist de domínios"
+    theory: |
+      A defesa mais robusta contra SSRF é uma allowlist explícita de
+      hosts/domínios permitidos, aplicada ANTES de fazer a requisição —
+      nunca uma blocklist (fácil de contornar com redirects, DNS
+      rebinding, IPs alternativos como 0x7f000001, etc).
+    steps:
+      - "Edite `/app/app.py` com `vi /app/app.py`."
+      - "Na função `preview()`, adicione uma checagem: `from urllib.parse import urlparse` e valide `urlparse(url).hostname in ALLOWED_HOSTS` antes de fazer a requisição."
+      - "Defina `ALLOWED_HOSTS = {\"example.com\", \"wikipedia.org\"}` no topo do arquivo."
+      - "Reinicie com `supervisorctl restart flaskapp`."
+    break_again_command: "cp /app/app.py.vulnerable /app/app.py && supervisorctl restart flaskapp"
+    validation:
+      command: "curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:5000/preview -H 'Content-Type: application/json' -d '{\"url\":\"http://169.254.169.254:8080/latest/meta-data/iam-credentials\"}'"
+      expected_output_contains: "403"
+      success_message: "Corrigido! A allowlist bloqueou o acesso ao host de metadados."
+      error_message: "Ainda está permitindo a requisição. Confira se ALLOWED_HOSTS foi aplicado antes do fetch da URL."
+
+recovery:
+  reset_command: "cp /app/app.py.original /app/app.py && supervisorctl restart flaskapp"

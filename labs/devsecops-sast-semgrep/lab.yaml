@@ -1,0 +1,70 @@
+id: devsecops-sast-semgrep
+title: "SAST na Prática — Achando Falhas de Código com semgrep"
+category: devsecops
+difficulty: beginner
+duration: 30m
+description: >
+  Um repositório Python com um SQL Injection e um uso perigoso de
+  eval() escondidos no código. Rode semgrep, entenda os achados e
+  corrija sem quebrar a aplicação.
+image: ghcr.io/codisec/lab-semgrep-python:latest
+tags: [sast, semgrep, sql-injection, code-review]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: []
+
+tasks:
+  - id: scan
+    title: "1. Rode o scanner SAST"
+    theory: |
+      SAST (Static Application Security Testing) analisa o código-fonte
+      sem executar a aplicação, procurando padrões perigosos conhecidos:
+      concatenação de SQL, uso de eval/exec com entrada não confiável,
+      credenciais hardcoded, etc. semgrep usa regras declarativas fáceis
+      de ler e customizar.
+    steps:
+      - "Vá para `cd /app/repo`"
+      - "Rode: `semgrep --config=auto .`"
+      - "Leia a saída: ela mostra arquivo, linha e uma explicação de cada achado."
+    validation:
+      command: "cd /app/repo && semgrep --config=auto . 2>&1 | grep -qi 'sql'"
+      expected_exit_code: 0
+      success_message: "Scan rodou e encontrou o achado de SQL Injection."
+      error_message: "Confira se está na pasta /app/repo antes de rodar o semgrep."
+
+  - id: fix-sqli
+    title: "2. Corrija o SQL Injection"
+    theory: |
+      O código monta a query com f-string interpolando direto o input do
+      usuário. A correção correta é usar queries parametrizadas — o
+      driver do banco cuida do escaping, e a entrada do usuário nunca é
+      tratada como parte do SQL.
+    steps:
+      - "Edite `/app/repo/db.py` com `vi /app/repo/db.py`."
+      - "Troque `cursor.execute(f\"SELECT * FROM users WHERE name = '{name}'\")` por `cursor.execute(\"SELECT * FROM users WHERE name = ?\", (name,))`."
+      - "Rode `semgrep --config=auto .` de novo e confirme que o achado de SQL sumiu."
+    validation:
+      command: "cd /app/repo && semgrep --config=auto . 2>&1 | grep -ci 'sql'"
+      expected_output_contains: "0"
+      success_message: "SQL Injection corrigido — a query agora é parametrizada."
+      error_message: "O semgrep ainda aponta o problema. Confira se a query usa parâmetro (?) em vez de f-string."
+
+  - id: fix-eval
+    title: "3. Corrija o uso perigoso de eval()"
+    theory: |
+      eval() executa qualquer string Python como código. Se essa string
+      vier (mesmo que indiretamente) de input do usuário, é execução de
+      código arbitrário. Quase sempre existe uma alternativa mais segura
+      e específica pra o que o eval() está tentando fazer.
+    steps:
+      - "Edite `/app/repo/calc.py` com `vi /app/repo/calc.py`."
+      - "Troque `resultado = eval(expressao)` por uma solução segura: `import ast; resultado = ast.literal_eval(expressao)` (só avalia literais, não código arbitrário) — ou, se for aritmética, use uma biblioteca de parsing de expressão matemática."
+      - "Rode `semgrep --config=auto .` novamente."
+    validation:
+      command: "cd /app/repo && semgrep --config=auto . 2>&1 | grep -ci 'eval'"
+      expected_output_contains: "0"
+      success_message: "Uso perigoso de eval() corrigido."
+      error_message: "Ainda há um achado sobre eval(). Confira se trocou por ast.literal_eval ou similar."
+
+recovery:
+  reset_command: "cp -r /app/repo.original/* /app/repo/"

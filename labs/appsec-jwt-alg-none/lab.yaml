@@ -1,0 +1,70 @@
+id: appsec-jwt-alg-none
+title: "JWT Inseguro — Forjando Token com alg=none"
+category: appsec
+difficulty: intermediate
+duration: 40m
+description: >
+  Uma API aceita JWT sem validar explicitamente o algoritmo de
+  assinatura. Explore o ataque clássico alg=none (forjar um token sem
+  assinatura válida) e corrija fixando o algoritmo esperado.
+image: ghcr.io/codisec/lab-flask-jwt-alg-none:latest
+tags: [jwt, authentication, broken-auth, api]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: [5000]
+
+tasks:
+  - id: recon
+    title: "1. Obtenha um token legítimo e decodifique"
+    theory: |
+      JSON Web Tokens têm 3 partes (header.payload.assinatura). O header
+      declara o algoritmo usado pra assinar (ex: HS256). Se o servidor
+      confiar cegamente no algoritmo que VEM DENTRO do token em vez de
+      exigir um algoritmo fixo, um atacante pode trocar o header pra
+      "alg: none" e remover a assinatura — e alguns servidores aceitam.
+    steps:
+      - "Rode: `curl -s -X POST http://localhost:5000/login -d 'user=alice' | tee token.txt`"
+      - "Decodifique o payload (parte do meio) com: `echo <parte2> | base64 -d`"
+      - "Observe o campo `role: user` no payload."
+    validation:
+      command: "test -s token.txt && grep -q '\\.' token.txt"
+      expected_exit_code: 0
+      success_message: "Token obtido e salvo em token.txt."
+      error_message: "Rode o curl de login primeiro pra gerar o token.txt."
+
+  - id: exploit
+    title: "2. Forje um token com alg=none e role=admin"
+    theory: |
+      Monte manualmente um novo token: header `{\"alg\":\"none\",\"typ\":\"JWT\"}`
+      codificado em base64url, um payload `{\"user\":\"alice\",\"role\":\"admin\"}`
+      também em base64url, unidos por ponto, com a assinatura vazia
+      (terminando em ponto, sem nada depois).
+    steps:
+      - "Rode o script pronto do lab: `python3 /app/forge_token.py` (ele monta o token alg=none pra você e imprime)."
+      - "Use o token forjado: `curl -s http://localhost:5000/admin -H \"Authorization: Bearer $(python3 /app/forge_token.py)\"`"
+    validation:
+      command: "curl -s http://localhost:5000/admin -H \"Authorization: Bearer $(python3 /app/forge_token.py)\" | grep -q 'painel-admin'"
+      expected_exit_code: 0
+      success_message: "Exploração confirmada! O servidor aceitou um token sem assinatura e te deu acesso de admin."
+      error_message: "Ainda não conseguiu acesso. Confira se o script forge_token.py rodou sem erro."
+
+  - id: fix
+    title: "3. Corrija fixando o algoritmo esperado"
+    theory: |
+      A correção é nunca confiar no campo "alg" do token recebido —
+      sempre especificar explicitamente qual algoritmo o servidor aceita
+      na hora de verificar (ex: `jwt.decode(token, key, algorithms=["HS256"])`
+      na biblioteca PyJWT), rejeitando qualquer outro, incluindo "none".
+    steps:
+      - "Edite `/app/app.py` com `vi /app/app.py`."
+      - "Localize a chamada `jwt.decode(...)` e adicione o parâmetro `algorithms=[\"HS256\"]` explicitamente."
+      - "Reinicie com `supervisorctl restart flaskapp`."
+    break_again_command: "cp /app/app.py.vulnerable /app/app.py && supervisorctl restart flaskapp"
+    validation:
+      command: "curl -s -o /dev/null -w '%{http_code}' http://localhost:5000/admin -H \"Authorization: Bearer $(python3 /app/forge_token.py)\""
+      expected_output_contains: "401"
+      success_message: "Corrigido! O servidor agora rejeita o token forjado com 401 Unauthorized."
+      error_message: "O servidor ainda aceita o token forjado. Confira se o parâmetro algorithms foi adicionado ao jwt.decode."
+
+recovery:
+  reset_command: "cp /app/app.py.original /app/app.py && supervisorctl restart flaskapp"

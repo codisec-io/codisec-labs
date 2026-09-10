@@ -1,0 +1,70 @@
+id: devsecops-secrets-detection
+title: "Secrets Vazados em Repositório — Detecção com gitleaks"
+category: devsecops
+difficulty: beginner
+duration: 25m
+description: >
+  Um repositório Git com uma AWS access key e uma senha de banco de dados
+  commitadas por engano, inclusive no histórico. Use gitleaks para
+  encontrar, remova do código e entenda por que remover do commit atual
+  não basta.
+image: ghcr.io/SEU_USUARIO/lab-gitleaks:latest
+tags: [secrets, gitleaks, git, ci-cd, supply-chain]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: []
+
+tasks:
+  - id: scan
+    title: "1. Rode o scanner de secrets"
+    theory: |
+      gitleaks varre o conteúdo E o histórico de commits de um repositório
+      Git procurando por padrões de credenciais (chaves AWS, tokens,
+      senhas em connection strings, etc).
+    steps:
+      - "Vá para o repositório: `cd /app/repo`"
+      - "Rode: `gitleaks detect --source . -v`"
+      - "Observe que ele encontra pelo menos 2 achados: uma AWS key e uma senha de banco."
+    validation:
+      command: "cd /app/repo && gitleaks detect --source . 2>&1 | grep -qi 'leaks found'"
+      expected_exit_code: 1
+      success_message: "Scan rodou e confirmou a presença de secrets no repositório (gitleaks retorna exit code != 0 quando encontra algo, de propósito, pra quebrar o CI)."
+      error_message: "Confira se está na pasta /app/repo."
+
+  - id: remove-current
+    title: "2. Remova o secret do arquivo atual"
+    theory: |
+      O primeiro passo óbvio: tirar a credencial hardcoded do código e
+      usar variável de ambiente ou um secrets manager.
+    steps:
+      - "Edite `config.py` com `vi /app/repo/config.py`."
+      - "Troque a linha `AWS_KEY = \"AKIA...\"` por `AWS_KEY = os.environ.get(\"AWS_KEY\")`."
+      - "Adicione `import os` no topo do arquivo se ainda não existir."
+      - "Rode `git -C /app/repo commit -am 'remove hardcoded secret'`."
+    validation:
+      command: "grep -c 'AKIA' /app/repo/config.py"
+      expected_output_contains: "0"
+      success_message: "O secret não está mais no arquivo atual."
+      error_message: "Ainda há uma chave AKIA... no arquivo. Revise a edição."
+
+  - id: understand-history
+    title: "3. Entenda por que isso NÃO resolve sozinho"
+    theory: |
+      Remover do arquivo atual não remove do HISTÓRICO do Git — qualquer
+      pessoa com acesso ao repositório ainda consegue ver a credencial
+      antiga rodando `git log -p` ou até com `git show <commit-antigo>`.
+      A credencial precisa ser: (1) revogada de verdade no provedor de
+      nuvem, e (2) removida do histórico com ferramentas como
+      `git filter-repo` ou BFG Repo-Cleaner — mas isso reescreve hashes
+      de commit e exige coordenação com todo o time.
+    steps:
+      - "Rode `gitleaks detect --source /app/repo -v` de novo (sem --no-git ou flags de branch única) e note que o achado no histórico ainda aparece."
+      - "Rode `git -C /app/repo log --all -p -- config.py | grep AKIA` para ver a chave antiga ainda visível no histórico."
+    validation:
+      command: "git -C /app/repo log --all -p -- config.py | grep -c AKIA"
+      expected_exit_code: 0
+      success_message: "Exato — a chave antiga ainda está no histórico. Na vida real, o próximo passo seria revogar a credencial na AWS IMEDIATAMENTE, e só depois reescrever o histórico se necessário."
+      error_message: "Rode o comando de log sugerido no passo anterior."
+
+recovery:
+  reset_command: "cp -r /app/repo.original/* /app/repo/ && git -C /app/repo checkout -- ."

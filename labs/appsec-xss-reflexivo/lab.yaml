@@ -1,0 +1,69 @@
+id: appsec-xss-reflexivo
+title: "XSS Refletido — Injeção de Script via Parâmetro de Busca"
+category: appsec
+difficulty: beginner
+duration: 25m
+description: >
+  Um campo de busca reflete o termo digitado direto na página, sem
+  sanitização. Explore o XSS refletido (OWASP Top 10 - A03 Injection) e
+  corrija com escaping de saída.
+image: ghcr.io/codisec/lab-flask-xss:latest
+tags: [xss, owasp-top10, injection, flask]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: [5000]
+
+tasks:
+  - id: recon
+    title: "1. Entenda o endpoint de busca"
+    theory: |
+      GET /search?q=termo devolve uma página HTML com "Resultados para:
+      termo". Se "termo" for inserido no HTML sem escaping, qualquer tag
+      ou script dentro dele é interpretado pelo navegador de quem abrir
+      esse link — não pelo servidor.
+    steps:
+      - "Rode: `curl 'http://localhost:5000/search?q=teste'`"
+      - "Observe que o valor 'teste' aparece dentro do HTML retornado, sem nenhum tratamento."
+    validation:
+      command: "curl -s 'http://localhost:5000/search?q=teste' | grep -q teste"
+      expected_exit_code: 0
+      success_message: "Confirmado — o termo é refletido sem tratamento no HTML."
+      error_message: "Confira se o serviço já terminou de subir (~10s) e tente de novo."
+
+  - id: exploit
+    title: "2. Explore o XSS"
+    theory: |
+      Se em vez de um termo comum você injetar uma tag <script>, o
+      servidor devolve ela dentro do HTML tal como está, e o navegador a
+      executa. Na vida real, um atacante manda esse link pra vítima
+      (phishing) e o script roda no contexto da sessão dela.
+    steps:
+      - "Rode: `curl -s 'http://localhost:5000/search?q=<script>alert(1)</script>'`"
+      - "Confirme que a tag <script> aparece intacta na resposta, sem ser escapada para &lt;script&gt;."
+    validation:
+      command: "curl -s 'http://localhost:5000/search?q=%3Cscript%3Ealert(1)%3C/script%3E' | grep -q '<script>alert(1)</script>'"
+      expected_exit_code: 0
+      success_message: "XSS confirmado! A tag script foi refletida sem escaping — em um navegador de verdade, isso executaria."
+      error_message: "Ainda não encontrou a tag intacta. Confira a URL codificada usada acima."
+
+  - id: fix
+    title: "3. Corrija com escaping de saída"
+    theory: |
+      A defesa correta contra XSS refletido é escapar (não filtrar por
+      blocklist) tudo que vem do usuário antes de inserir no HTML —
+      transformando < em &lt;, > em &gt;, etc. Frameworks modernos (Jinja2,
+      React) fazem isso por padrão quando você usa a sintaxe certa; o bug
+      geralmente vem de alguém usar uma função "raw"/"unsafe" por engano.
+    steps:
+      - "Edite `/app/app.py` com `vi /app/app.py`."
+      - "Troque a função que monta o HTML manualmente (`f-string` ou concatenação) por `render_template_string` com `{{ q }}` do Jinja2, que escapa automaticamente — ou aplique `markupsafe.escape(q)` antes de inserir no HTML."
+      - "Reinicie com `supervisorctl restart flaskapp`."
+    break_again_command: "cp /app/app.py.vulnerable /app/app.py && supervisorctl restart flaskapp"
+    validation:
+      command: "curl -s 'http://localhost:5000/search?q=%3Cscript%3Ealert(1)%3C/script%3E' | grep -q '&lt;script&gt;'"
+      expected_exit_code: 0
+      success_message: "Corrigido! A tag agora aparece escapada (&lt;script&gt;) em vez de ser interpretada."
+      error_message: "A tag ainda está sendo refletida sem escaping. Confira se trocou pra render_template_string com {{ q }} ou aplicou escape()."
+
+recovery:
+  reset_command: "cp /app/app.py.original /app/app.py && supervisorctl restart flaskapp"

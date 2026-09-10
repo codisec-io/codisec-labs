@@ -1,0 +1,68 @@
+id: devsecops-container-scan-trivy
+title: "Container Scanning — Achando CVEs em Imagem Docker com trivy"
+category: devsecops
+difficulty: intermediate
+duration: 35m
+description: >
+  Uma imagem Docker baseada numa versão antiga do Debian, com pacotes
+  desatualizados carregando CVEs conhecidas. Rode trivy, entenda a
+  severidade dos achados e corrija atualizando a imagem base.
+image: ghcr.io/codisec/lab-trivy-scan:latest
+tags: [trivy, container-security, cve, supply-chain]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: []
+
+tasks:
+  - id: scan
+    title: "1. Rode o scan de vulnerabilidades na imagem"
+    theory: |
+      Container scanning analisa as camadas de uma imagem Docker
+      (pacotes do SO, bibliotecas instaladas) contra bancos de dados de
+      CVE conhecidas. Diferente do SAST (que olha SEU código), aqui o
+      alvo é tudo que veio de fora — a imagem base e as dependências do
+      sistema.
+    steps:
+      - "Rode: `trivy image app-vulneravel:old --severity HIGH,CRITICAL`"
+      - "Leia a saída: cada linha mostra o pacote, a versão instalada, a versão corrigida e o ID da CVE."
+    validation:
+      command: "trivy image app-vulneravel:old --severity HIGH,CRITICAL 2>&1 | grep -qi CVE"
+      expected_exit_code: 0
+      success_message: "Scan rodou e encontrou CVEs de severidade alta/crítica na imagem."
+      error_message: "Confira se a imagem app-vulneravel:old já foi carregada (pode levar alguns segundos na primeira vez)."
+
+  - id: count
+    title: "2. Quantifique os achados críticos"
+    theory: |
+      Antes de corrigir, é importante saber o tamanho do problema — isso
+      ajuda a priorizar e a comparar o "antes e depois" depois da
+      correção.
+    steps:
+      - "Rode: `trivy image app-vulneravel:old --severity CRITICAL --format json | grep -c VulnerabilityID`"
+      - "Anote esse número — vamos comparar depois da correção."
+    validation:
+      command: "trivy image app-vulneravel:old --severity CRITICAL --format json | grep -c VulnerabilityID"
+      expected_exit_code: 0
+      success_message: "Contagem feita. Guarde esse número pra comparar no próximo passo."
+      error_message: "Rode o comando trivy com --format json como no passo anterior."
+
+  - id: fix
+    title: "3. Corrija atualizando a imagem base"
+    theory: |
+      A correção mais eficaz contra CVEs de SO é simples: atualizar a
+      imagem base pra uma versão mais recente e mantida (ou trocar por
+      uma distro minimalista tipo Alpine/Distroless, que tem MUITO menos
+      pacotes e portanto muito menos superfície de CVE).
+    steps:
+      - "Edite `/app/Dockerfile` com `vi /app/Dockerfile`."
+      - "Troque a primeira linha `FROM debian:9` por `FROM debian:12-slim` (ou `FROM python:3.12-slim` se a imagem for baseada em Python)."
+      - "Reconstrua: `docker build -t app-vulneravel:new /app`"
+      - "Rode o scan na nova imagem: `trivy image app-vulneravel:new --severity CRITICAL --format json | grep -c VulnerabilityID`"
+    validation:
+      command: "test $(trivy image app-vulneravel:new --severity CRITICAL --format json | grep -c VulnerabilityID) -lt $(trivy image app-vulneravel:old --severity CRITICAL --format json | grep -c VulnerabilityID)"
+      expected_exit_code: 0
+      success_message: "A nova imagem tem significativamente menos CVEs críticas que a antiga."
+      error_message: "A contagem não diminuiu. Confira se o Dockerfile foi editado e a imagem reconstruída com a tag :new."
+
+recovery:
+  reset_command: "cp /app/Dockerfile.original /app/Dockerfile"

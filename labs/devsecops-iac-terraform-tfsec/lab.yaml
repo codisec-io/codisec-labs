@@ -1,0 +1,67 @@
+id: devsecops-iac-terraform-tfsec
+title: "Segurança em IaC — Encontrando e Corrigindo Falhas com tfsec"
+category: devsecops
+difficulty: intermediate
+duration: 45m
+description: >
+  Um projeto Terraform com um bucket S3 público e um Security Group aberto
+  para o mundo (0.0.0.0/0). Rode tfsec, entenda os achados e corrija o código.
+image: ghcr.io/SEU_USUARIO/lab-terraform-tfsec:latest
+tags: [terraform, iac, tfsec, aws, sast]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: []
+
+tasks:
+  - id: scan
+    title: "1. Rode o scanner de segurança de IaC"
+    theory: |
+      tfsec analisa arquivos .tf estaticamente (sem precisar de credenciais
+      AWS reais nem de aplicar o plano) procurando por más práticas de
+      segurança conhecidas: buckets públicos, portas abertas, criptografia
+      ausente, IAM excessivamente permissivo, etc.
+    steps:
+      - "Vá para a pasta do projeto: `cd /app/infra`"
+      - "Rode: `tfsec .`"
+      - "Leia a saída: ela aponta o arquivo, a linha e a regra violada (ex: aws-s3-block-public-acls, aws-vpc-no-public-ingress-sgr)."
+    validation:
+      command: "cd /app/infra && tfsec . 2>&1 | grep -q 'aws-s3'"
+      expected_exit_code: 0
+      success_message: "Você rodou o scan e encontrou o achado no bucket S3."
+      error_message: "Confira se está na pasta /app/infra antes de rodar `tfsec .`"
+
+  - id: fix-s3
+    title: "2. Corrija o bucket S3 público"
+    theory: |
+      Um bucket S3 sem bloqueio de acesso público pode expor dados
+      sensíveis pra qualquer pessoa na internet — uma das causas mais
+      comuns de vazamento de dados em nuvem.
+    steps:
+      - "Edite `/app/infra/s3.tf` com `vi /app/infra/s3.tf`."
+      - "Adicione um recurso `aws_s3_bucket_public_access_block` referenciando o bucket, com todos os 4 campos (`block_public_acls`, `block_public_policy`, `ignore_public_acls`, `restrict_public_buckets`) como `true`."
+      - "Rode `tfsec .` de novo pra confirmar que o achado sumiu."
+    validation:
+      command: "cd /app/infra && tfsec . 2>&1 | grep -c 'aws-s3'"
+      expected_output_contains: "0"
+      success_message: "Bucket corrigido — o bloqueio de acesso público está aplicado."
+      error_message: "O tfsec ainda está apontando o problema no S3. Revise o bloco aws_s3_bucket_public_access_block."
+
+  - id: fix-sg
+    title: "3. Corrija o Security Group aberto ao mundo"
+    theory: |
+      Um Security Group com ingress 0.0.0.0/0 na porta 22 (SSH) ou 3389
+      (RDP) é um dos achados mais comuns e mais explorados em ambientes
+      cloud reais — bots varrem a internet inteira procurando exatamente
+      isso.
+    steps:
+      - "Edite `/app/infra/sg.tf` com `vi /app/infra/sg.tf`."
+      - "Troque o `cidr_blocks = [\"0.0.0.0/0\"]` da porta 22 para o CIDR da sua rede interna, ex: `cidr_blocks = [\"10.0.0.0/16\"]`."
+      - "Rode `tfsec .` novamente."
+    validation:
+      command: "cd /app/infra && tfsec . 2>&1 | grep -c 'aws-vpc-no-public-ingress'"
+      expected_output_contains: "0"
+      success_message: "Security Group corrigido — não há mais ingress irrestrito."
+      error_message: "Ainda há um achado de ingress público. Confira se o CIDR foi trocado no arquivo correto."
+
+recovery:
+  reset_command: "cp -r /app/infra.original/* /app/infra/"

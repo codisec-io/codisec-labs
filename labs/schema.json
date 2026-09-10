@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lab",
+  "type": "object",
+  "required": ["id", "title", "category", "difficulty", "duration", "description", "image", "tasks", "recovery"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Slug em minúsculas com hífens, igual ao nome da pasta"
+    },
+    "title": { "type": "string", "minLength": 5 },
+    "category": { "type": "string", "enum": ["appsec", "devsecops", "devops"] },
+    "difficulty": { "type": "string", "enum": ["beginner", "intermediate", "advanced"] },
+    "duration": { "type": "string", "pattern": "^[0-9]+[mh]$" },
+    "description": { "type": "string", "minLength": 10 },
+    "image": { "type": "string", "minLength": 3 },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "maintainers": { "type": "array", "items": { "type": "string" } },
+    "exposed_ports": { "type": "array", "items": { "type": "integer" } },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "theory", "steps", "validation"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "theory": { "type": "string", "minLength": 10 },
+          "steps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "break_again_command": { "type": "string" },
+          "validation": {
+            "type": "object",
+            "required": ["command", "success_message", "error_message"],
+            "properties": {
+              "command": { "type": "string" },
+              "expected_exit_code": { "type": "integer" },
+              "expected_output_contains": { "type": "string" },
+              "success_message": { "type": "string" },
+              "error_message": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "required": ["reset_command"],
+      "properties": {
+        "reset_command": { "type": "string" }
+      }
+    }
+  }
+}

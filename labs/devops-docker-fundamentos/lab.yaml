@@ -1,0 +1,71 @@
+id: devops-docker-fundamentos
+title: "Fundamentos de Docker — Imagens, Containers e Volumes"
+category: devops
+difficulty: beginner
+duration: 30m
+description: >
+  Lab de entrada pra quem nunca usou Docker: construa uma imagem, rode um
+  container, entenda a diferença entre container efêmero e dados
+  persistidos em volume.
+image: docker:24-dind
+tags: [docker, fundamentos, containers]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: []
+
+tasks:
+  - id: build
+    title: "1. Construa uma imagem a partir de um Dockerfile"
+    theory: |
+      Um Dockerfile descreve, camada por camada, como montar uma imagem.
+      `docker build` lê esse arquivo e produz uma imagem que pode rodar
+      em qualquer lugar que tenha Docker.
+    steps:
+      - "Vá para `cd /app/exemplo`"
+      - "Veja o conteúdo do Dockerfile com `cat Dockerfile`."
+      - "Construa a imagem: `docker build -t meu-app:1.0 .`"
+    validation:
+      command: "docker images meu-app:1.0 --format '{{.Repository}}'"
+      expected_output_contains: "meu-app"
+      success_message: "Imagem construída com sucesso!"
+      error_message: "A imagem não foi encontrada. Rode `docker build -t meu-app:1.0 .` dentro de /app/exemplo."
+
+  - id: run
+    title: "2. Rode o container e entenda o isolamento"
+    theory: |
+      Cada container roda isolado: tem seu próprio filesystem, processos
+      e (por padrão) rede. Escrever um arquivo dentro do container NÃO
+      afeta o host nem outros containers.
+    steps:
+      - "Rode: `docker run --name teste1 -d meu-app:1.0`"
+      - "Escreva um arquivo dentro dele: `docker exec teste1 sh -c 'echo oi > /tmp/arquivo.txt'`"
+      - "Confirme que o arquivo existe: `docker exec teste1 cat /tmp/arquivo.txt`"
+    validation:
+      command: "docker exec teste1 cat /tmp/arquivo.txt"
+      expected_output_contains: "oi"
+      success_message: "Container rodando e isolado corretamente."
+      error_message: "Confira se o container 'teste1' está rodando com `docker ps`."
+
+  - id: volumes
+    title: "3. Persista dados com um volume"
+    theory: |
+      Se você remover o container, tudo que foi escrito no filesystem dele
+      some junto — é efêmero por padrão. Volumes resolvem isso: montam um
+      espaço de armazenamento gerenciado pelo Docker que sobrevive à
+      remoção do container.
+    steps:
+      - "Remova o container anterior: `docker rm -f teste1`"
+      - "Crie um volume: `docker volume create dados-persistentes`"
+      - "Rode um novo container montando o volume: `docker run --name teste2 -v dados-persistentes:/dados -d meu-app:1.0`"
+      - "Escreva um arquivo no volume: `docker exec teste2 sh -c 'echo persisto > /dados/arquivo.txt'`"
+      - "Remova o container: `docker rm -f teste2`"
+      - "Suba outro container NOVO com o mesmo volume: `docker run --name teste3 -v dados-persistentes:/dados -d meu-app:1.0`"
+      - "Confirme que o arquivo ainda existe: `docker exec teste3 cat /dados/arquivo.txt`"
+    validation:
+      command: "docker exec teste3 cat /dados/arquivo.txt"
+      expected_output_contains: "persisto"
+      success_message: "O dado sobreviveu à remoção do container — esse é o papel de um volume."
+      error_message: "Confira se seguiu todos os passos na ordem, incluindo remover o teste2 antes de subir o teste3."
+
+recovery:
+  reset_command: "docker rm -f teste1 teste2 teste3 2>/dev/null; docker volume rm dados-persistentes 2>/dev/null; true"

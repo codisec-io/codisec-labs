@@ -1,0 +1,66 @@
+id: devops-ansible-fundamentos
+title: "Fundamentos de Ansible — Automação Declarativa de Configuração"
+category: devops
+difficulty: beginner
+duration: 30m
+description: >
+  Escreva seu primeiro playbook Ansible: instale um pacote, garanta que
+  um serviço está rodando e crie um arquivo de configuração — tudo de
+  forma idempotente.
+image: ghcr.io/codisec/lab-ansible-fundamentos:latest
+tags: [ansible, iac, configuration-management, fundamentos]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: []
+
+tasks:
+  - id: inventory
+    title: "1. Entenda o inventário"
+    theory: |
+      Ansible controla máquinas listadas num "inventário". Neste lab, o
+      inventário aponta pra localhost (o próprio container), então tudo
+      que você rodar afeta só este ambiente isolado.
+    steps:
+      - "Veja o inventário: `cat /app/inventory.ini`"
+      - "Teste a conexão: `ansible all -i /app/inventory.ini -m ping`"
+    validation:
+      command: "ansible all -i /app/inventory.ini -m ping | grep -q SUCCESS"
+      expected_exit_code: 0
+      success_message: "Conexão com o host do inventário confirmada."
+      error_message: "Confira se o arquivo /app/inventory.ini existe e tem o host localhost configurado."
+
+  - id: first-playbook
+    title: "2. Escreva um playbook que instala um pacote"
+    theory: |
+      Um playbook descreve o ESTADO DESEJADO, não os comandos passo a
+      passo. `ansible.builtin.package` garante que o pacote está
+      instalado — se já estiver, o Ansible não faz nada (idempotência).
+    steps:
+      - "Crie `/app/playbook.yml` com `vi /app/playbook.yml`."
+      - "Adicione: um play com `hosts: all`, e uma task usando o módulo `ansible.builtin.package` com `name: htop` e `state: present`."
+      - "Rode: `ansible-playbook -i /app/inventory.ini /app/playbook.yml`"
+    validation:
+      command: "which htop"
+      expected_exit_code: 0
+      success_message: "htop foi instalado com sucesso pelo playbook."
+      error_message: "htop não foi encontrado. Confira a task de instalação no playbook.yml."
+
+  - id: idempotency
+    title: "3. Confirme a idempotência"
+    theory: |
+      Rodar o mesmo playbook duas vezes não deve gerar erro nem
+      reinstalar nada desnecessariamente — o Ansible relata "ok" em vez
+      de "changed" na segunda execução. Essa é a diferença fundamental
+      entre automação declarativa (Ansible/Terraform) e um script
+      imperativo comum.
+    steps:
+      - "Rode o mesmo playbook de novo: `ansible-playbook -i /app/inventory.ini /app/playbook.yml`"
+      - "Observe na saída que a task aparece como `ok=` em vez de `changed=` dessa vez."
+    validation:
+      command: "ansible-playbook -i /app/inventory.ini /app/playbook.yml | grep -E 'changed=0'"
+      expected_exit_code: 0
+      success_message: "Idempotência confirmada — a segunda execução não mudou nada, como esperado."
+      error_message: "A saída ainda mostra 'changed'. Isso é normal se você editou o playbook entre as execuções — rode de novo sem editar."
+
+recovery:
+  reset_command: "apt-get remove -y htop 2>/dev/null; rm -f /app/playbook.yml; true"

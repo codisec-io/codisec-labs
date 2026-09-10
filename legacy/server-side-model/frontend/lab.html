@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.5.0/css/xterm.min.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="back-link">← Voltar ao catálogo</a>
+    <h1 id="lab-title">Carregando...</h1>
+  </header>
+
+  <main class="lab-layout">
+    <section class="lab-instructions">
+      <p id="lab-description"></p>
+      <div id="lab-meta"></div>
+
+      <button id="start-btn" class="btn-primary">▶ Iniciar Lab</button>
+      <button id="stop-btn" class="btn-secondary" style="display:none">■ Encerrar Lab</button>
+      <span id="session-timer"></span>
+
+      <div id="tasks-container"></div>
+    </section>
+
+    <section class="lab-terminal">
+      <h3>Terminal</h3>
+      <div id="terminal"></div>
+      <p class="hint">O terminal só fica ativo depois de clicar em "Iniciar Lab".</p>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/5.5.0/xterm.min.js"></script>
+  <script src="config.js"></script>
+  <script src="lab.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+name: Validar Labs
+
+# Roda em todo push/PR interno que mexa na pasta /labs, garantindo que
+# nenhum lab.yaml malformado ou incompleto chegue em produção.
+# Este repositório não aceita PRs externos — contribuições da comunidade
+# entram via Issue (template Feature Request) e são implementadas pela
+# equipe mantenedora.
+on:
+  pull_request:
+    paths:
+      - "labs/**"
+  push:
+    branches: [main]
+    paths:
+      - "labs/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: pip install pyyaml jsonschema
+
+      - name: Validar schema de todos os labs
+        run: python3 scripts/validate_lab_schema.py
+
+      - name: Comentar no PR se falhar
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "❌ A validação automática do(s) lab(s) falhou. Veja os logs da Action acima — geralmente é um campo obrigatório faltando ou o `id` não bater com o nome da pasta."
+            })

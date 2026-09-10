@@ -1,0 +1,66 @@
+id: appsec-idor-api
+title: "IDOR em API REST — Acesso Indevido a Dados de Terceiros"
+category: appsec
+difficulty: beginner
+duration: 30m
+description: >
+  Explore uma API Flask vulnerável a IDOR (Insecure Direct Object Reference,
+  OWASP Top 10 - A01 Broken Access Control), confirme a exploração e depois
+  aplique a correção.
+image: ghcr.io/SEU_USUARIO/lab-flask-idor:latest
+tags: [idor, api, owasp-top10, flask, broken-access-control]
+maintainers:
+  - "Fernando <seu-email@exemplo.com>"
+exposed_ports: [5000]
+
+tasks:
+  - id: recon
+    title: "1. Reconhecimento — entenda a API"
+    theory: |
+      A API expõe o endpoint GET /api/users/{id}/profile. O usuário autenticado
+      recebe um token, mas o servidor NUNCA checa se o {id} da URL pertence
+      a esse token — ele só busca o registro pelo ID informado. Isso é um
+      IDOR: a referência ao objeto (o ID) é direta e não validada.
+    steps:
+      - "No terminal ao lado, rode `curl http://localhost:5000/api/users/1/profile` para ver o seu próprio perfil (usuário 1)."
+      - "Observe a resposta JSON: contém nome, email e um campo `ssn_last4`."
+    validation:
+      command: "curl -s http://localhost:5000/api/users/1/profile | grep -q email"
+      expected_exit_code: 0
+      success_message: "Certo, você confirmou que a API responde para o usuário 1."
+      error_message: "A API não respondeu como esperado. Confira se o container terminou de subir (pode levar ~10s)."
+
+  - id: exploit
+    title: "2. Exploração — acesse dados de outro usuário"
+    theory: |
+      Como não há checagem de propriedade do recurso, basta trocar o ID
+      na URL para ver dados de qualquer outro usuário cadastrado.
+    steps:
+      - "Rode `curl http://localhost:5000/api/users/2/profile`."
+      - "Confirme que você recebeu o email e o ssn_last4 do usuário 2, sem nunca ter se autenticado como ele."
+    validation:
+      command: "curl -s http://localhost:5000/api/users/2/profile | grep -q ssn_last4"
+      expected_exit_code: 0
+      success_message: "Exploração confirmada! Você acessou dados sensíveis de outro usuário só trocando o ID na URL."
+      error_message: "Ainda não encontrou. Tente `curl http://localhost:5000/api/users/2/profile`."
+
+  - id: fix
+    title: "3. Correção — aplique a checagem de autorização"
+    theory: |
+      A correção correta é validar, no servidor, que o ID solicitado
+      corresponde ao usuário do token de autenticação (ou que o usuário
+      tem permissão explícita de admin para ver outros perfis).
+    steps:
+      - "Edite o arquivo com `vi /app/app.py` (ou `nano /app/app.py` se preferir)."
+      - "Localize a função `get_profile(user_id)`."
+      - "Adicione, logo no início da função: `if user_id != current_user_id(): abort(403)`"
+      - "Salve e reinicie o serviço com `supervisorctl restart flaskapp`."
+    break_again_command: "cp /app/app.py.vulnerable /app/app.py && supervisorctl restart flaskapp"
+    validation:
+      command: "curl -s -o /dev/null -w '%{http_code}' http://localhost:5000/api/users/2/profile"
+      expected_output_contains: "403"
+      success_message: "Corrigido! Agora a API retorna 403 Forbidden ao tentar acessar o perfil de outro usuário."
+      error_message: "A API ainda retorna 200. Revise a condição adicionada em app.py e confira se reiniciou o serviço."
+
+recovery:
+  reset_command: "cp /app/app.py.original /app/app.py && supervisorctl restart flaskapp"

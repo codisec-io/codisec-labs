@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codisec Labs — AppSec/DevSecOps/DevOps</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🧪 Codisec Labs</h1>
+    <p class="subtitle">AppSec · DevSecOps · DevOps — grátis, open-source, no navegador</p>
+    <a class="github-link" href="https://github.com/codisec/codisec-labs" target="_blank">
+      ⭐ Contribuir / Sugerir lab (Pull Request)
+    </a>
+  </header>
+
+  <main>
+    <div class="filters">
+      <label>Categoria:
+        <select id="filter-category">
+          <option value="">Todas</option>
+          <option value="appsec">AppSec</option>
+          <option value="devsecops">DevSecOps</option>
+          <option value="devops">DevOps</option>
+        </select>
+      </label>
+      <label>Dificuldade:
+        <select id="filter-difficulty">
+          <option value="">Todas</option>
+          <option value="beginner">Iniciante</option>
+          <option value="intermediate">Intermediário</option>
+          <option value="advanced">Avançado</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="lab-grid" class="lab-grid">
+      <p>Carregando labs...</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>
+      Projeto colaborativo — qualquer pessoa pode adicionar ou editar um lab via Pull Request.
+      Veja <a href="https://github.com/codisec/codisec-labs/blob/main/CONTRIBUTING.md" target="_blank">CONTRIBUTING.md</a>.
+    </p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
