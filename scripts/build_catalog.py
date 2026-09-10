@@ -58,6 +58,7 @@ def catalog_entry(lab: dict) -> dict:
         "tags": lab.get("tags", []),
         "image": lab["image"],
         "image_published": is_image_published(lab["image"]),
+        "requires_privileged": lab.get("requires_privileged", False),
         "task_count": len(lab["tasks"]),
         "maintainers": lab.get("maintainers", []),
     }
@@ -92,6 +93,7 @@ def main() -> int:
     for lab in labs:
         lab_out = {k: v for k, v in lab.items() if k != "_dir"}
         lab_out["image_published"] = is_image_published(lab["image"])
+        lab_out["requires_privileged"] = lab.get("requires_privileged", False)
         (LABS_JSON_DIR / f"{lab['id']}.json").write_text(
             json.dumps(lab_out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )

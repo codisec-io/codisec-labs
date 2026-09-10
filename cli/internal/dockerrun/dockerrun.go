@@ -130,6 +130,10 @@ func (r *Runner) startWithCommand(ctx context.Context, lab labspec.Lab, cmdOverr
 
 	exposedPorts, bindings := portBindings(lab.ExposedPorts)
 
+	if lab.RequiresPrivileged {
+		fmt.Fprintf(os.Stderr, "Subindo em modo privilegiado (requires_privileged: true no lab.yaml)...\n")
+	}
+
 	resp, err := r.cli.ContainerCreate(ctx,
 		&container.Config{
 			Image:        lab.Image,
@@ -141,6 +145,11 @@ func (r *Runner) startWithCommand(ctx context.Context, lab labspec.Lab, cmdOverr
 		&container.HostConfig{
 			PortBindings: bindings,
 			AutoRemove:   false,
+			// Só true quando o lab.yaml declara requires_privileged —
+			// nunca por padrão. Ver docs/SECURITY.md, "Labs que exigem
+			// modo privilegiado": a confirmação interativa acontece
+			// antes disso, em cmd/start.go, nunca aqui em silêncio.
+			Privileged: lab.RequiresPrivileged,
 		},
 		&network.NetworkingConfig{},
 		nil,
@@ -222,6 +231,15 @@ func (r *Runner) AttachInteractiveShell(ctx context.Context, labID string) error
 	}()
 	go func() {
 		_, _ = io.Copy(resp.Conn, os.Stdin)
+		// Repassa o EOF do nosso stdin pro lado do container (metade
+		// da conexão fechada pra escrita) — sem isso, um shell que
+		// receba EOF num stdin não-interativo (script, CI, `< arquivo`)
+		// nunca é avisado disso e fica esperando entrada pra sempre.
+		// Num terminal real interativo isso não muda nada: o usuário
+		// sai com `exit`/Ctrl+D, que já passa por aqui do mesmo jeito.
+		if cw, ok := resp.Conn.(interface{ CloseWrite() error }); ok {
+			_ = cw.CloseWrite()
+		}
 	}()
 
 	select {

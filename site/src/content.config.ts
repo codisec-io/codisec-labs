@@ -41,6 +41,7 @@ const labs = defineCollection({
     duration: z.string(),
     description: z.string(),
     image: z.string(),
+    requires_privileged: z.boolean().default(false),
     tags: z.array(z.string()).default([]),
     maintainers: z.array(z.string()).default([]),
     exposed_ports: z.array(z.number()).default([]),

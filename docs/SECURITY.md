@@ -74,7 +74,53 @@ edição de `labs/` é fechada pra PR externo por esse motivo exato, e
 `.github/workflows/validate-labs.yml` valida todo `lab.yaml` contra
 `labs/schema.json` antes de qualquer merge.
 
-## 4. Superfície pública
+## 4. Labs que exigem modo privilegiado
+
+A maioria dos labs roda com as permissões padrão de um container Docker
+comum — sem acesso especial ao host. Mas alguns temas (fundamentos de
+Docker, por exemplo) só fazem sentido se o próprio lab tiver um Docker
+de verdade pra você praticar dentro dele. Isso exige rodar o container
+do lab em modo **privilegiado** (`--privileged`), o que dá a esse
+container acesso equivalente a root na máquina do usuário.
+
+**Por que `--privileged` com Docker-in-Docker isolado, não montar
+`/var/run/docker.sock` do host:** eram as duas opções óbvias. Montar o
+socket do host é mais simples de implementar, mas faz o container do
+lab controlar o Docker **do próprio host do usuário** — qualquer
+`docker run`/`docker build` dentro do lab cria containers e imagens que
+aparecem no `docker ps`/`docker images` do host, e sobrevivem ao
+`codisec lab stop` (que só remove o container do lab, não sabe nada
+sobre containers "filhos" criados via socket compartilhado). Isso quebra
+a garantia de "cada sessão de lab começa e termina limpa" que o resto do
+projeto assume. Testado na prática: com `--privileged` e
+Docker-in-Docker de verdade (imagem `docker:24-dind`), uma imagem
+construída dentro do lab (`meu-app:1.0`) **nunca aparece** no
+`docker images` do host, e some sozinha quando `codisec lab stop`
+remove o container — o daemon aninhado e todo o estado dele vivem só
+ali dentro. O custo é armazenamento/cgroups aninhados, mas pro que esse
+lab ensina (build, run, volumes) isso não é perceptível.
+
+**Como funciona na prática:**
+
+- `labs/schema.json` tem o campo opcional `requires_privileged`
+  (default `false`). Só `labs/devops-docker-fundamentos/lab.yaml`
+  declara `requires_privileged: true` hoje — nenhum outro lab precisa
+  disso, e não deve ganhar esse campo "de graça" só porque é possível;
+  cada caso novo merece a mesma análise acima antes de marcar `true`.
+- `scripts/build_catalog.py` propaga esse campo pro `catalog.json` e
+  pro `labs/<id>.json` — é assim que tanto a CLI quanto o site sabem
+  disso sem reimplementar a leitura do `lab.yaml`.
+- A CLI (`cmd/start.go`) **nunca** sobe um container privilegiado em
+  silêncio: se `requires_privileged` for `true`, ela mostra um aviso
+  explícito e pede confirmação (`Continuar? [y/N]`) antes de criar o
+  container. `--yes`/`-y` pula a confirmação pra uso não-interativo
+  (scripts, CI), mas o padrão sem essa flag é sempre perguntar.
+- O site (`/labs/<id>`) mostra o mesmo aviso visualmente *antes* do
+  usuário sequer instalar a CLI ou rodar o comando — a decisão de
+  confiar ou não num lab assim começa na hora de escolher rodá-lo, não
+  só na hora de confirmar no terminal.
+
+## 5. Superfície pública
 
 Recapitulando o que já está em `docs/ARCHITECTURE.md`: o único artefato
 nosso acessível pela internet é o site estático, o catálogo, os

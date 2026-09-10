@@ -172,7 +172,10 @@ section { padding: 72px 0; border-top: 1px solid var(--hairline); }
   padding: 3px 9px; border-radius: 999px; border: 1px solid var(--hairline); color: var(--muted);
   margin-right: 6px;
 }
-.image-warning {
+/* Aviso genérico de alerta na página de lab — usado tanto pra imagem
+   ainda não publicada quanto pra lab que exige modo privilegiado
+   (mesmo ícone/cor pros dois, ver docs/SECURITY.md). */
+.lab-warning {
   margin-top: 16px; font-size: 13px; color: var(--diff-intermediate);
   border: 1px solid var(--amber-dim); border-radius: 4px; padding: 10px 12px; background: rgba(232,163,61,.08);
 }

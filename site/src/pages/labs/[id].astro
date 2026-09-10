@@ -41,10 +41,20 @@ const difficultyLabel: Record<string, string> = {
         <p style="color:var(--muted); margin-top:12px; font-size:14.5px;">{data.description}</p>
 
         {!imagePublished && (
-          <div class="image-warning">
+          <div class="lab-warning">
             ⚠️ A imagem Docker deste lab (<code>{data.image}</code>) ainda não
             foi publicada pela equipe — o comando abaixo não funciona por
             enquanto. Acompanhe o progresso em docs/CHECKLIST.md.
+          </div>
+        )}
+
+        {data.requires_privileged && (
+          <div class="lab-warning">
+            ⚠️ Este lab roda em <strong>modo privilegiado</strong>{' '}
+            (Docker-in-Docker) — equivalente a acesso root na sua máquina.
+            A CLI vai pedir confirmação explícita antes de iniciar (ver
+            "Labs que exigem modo privilegiado" em docs/SECURITY.md no
+            repositório).
           </div>
         )}
 

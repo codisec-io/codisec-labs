@@ -6,8 +6,12 @@ duration: 30m
 description: >
   Lab de entrada pra quem nunca usou Docker: construa uma imagem, rode um
   container, entenda a diferença entre container efêmero e dados
-  persistidos em volume.
+  persistidos em volume. Roda em modo privilegiado (Docker-in-Docker
+  isolado dentro do próprio container do lab — ver
+  docs/SECURITY.md) porque o objetivo é você ter um Docker de verdade
+  pra praticar, sem mexer no Docker da sua máquina.
 image: docker:24-dind
+requires_privileged: true
 tags: [docker, fundamentos, containers]
 maintainers:
   - "Fernando <seu-email@exemplo.com>"

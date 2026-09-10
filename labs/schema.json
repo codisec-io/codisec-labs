@@ -15,6 +15,11 @@
     "duration": { "type": "string", "pattern": "^[0-9]+[mh]$" },
     "description": { "type": "string", "minLength": 10 },
     "image": { "type": "string", "minLength": 3 },
+    "requires_privileged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se true, o lab precisa de acesso privilegiado ao host (--privileged) para funcionar (ex: labs que rodam Docker-in-Docker). A CLI avisa e exige confirmação explícita (ou a flag --yes) antes de iniciar um lab assim — nunca silenciosamente. Ver docs/SECURITY.md, seção 'Labs que exigem modo privilegiado'."
+    },
     "tags": { "type": "array", "items": { "type": "string" } },
     "maintainers": { "type": "array", "items": { "type": "string" } },
     "exposed_ports": { "type": "array", "items": { "type": "integer" } },

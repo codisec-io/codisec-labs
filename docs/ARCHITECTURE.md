@@ -85,6 +85,29 @@ terceiro é referenciada num `lab.yaml` sem revisão de um mantenedor.
 | Container do lab | Docker do usuário | Zero custo de infra nosso, zero superfície de ataque multiusuário |
 | CLI | Binário local, instalado via `install.sh`/`install.ps1` | Só ela sabe falar com o Docker local; o site nunca tenta |
 
+## Exceção ao isolamento: labs que exigem modo privilegiado
+
+Todo o desenho acima assume que um container de lab roda com as
+permissões padrão do Docker — sem acesso especial ao host. Um lab
+(`devops-docker-fundamentos`) é exceção deliberada: ele precisa de um
+Docker de verdade rodando *dentro* dele pra ensinar Docker, o que exige
+`--privileged`.
+
+Decisão: **`--privileged` com Docker-in-Docker isolado dentro do
+próprio container do lab, nunca montar `/var/run/docker.sock` do
+host.** A alternativa do socket montado pareceria mais simples, mas faz
+o lab controlar o Docker do host do usuário diretamente — os containers
+e imagens criados durante o lab passam a existir no host, fora do
+alcance de `codisec lab stop`, o que quebra a garantia de sessão limpa
+que todo o resto deste documento descreve. Com dind isolado, verificado
+na prática: nada que acontece dentro do lab aparece no Docker do host,
+e tudo some junto quando o container do lab é removido. Raciocínio
+completo e como a CLI/site avisam o usuário antes de rodar um lab assim
+em `docs/SECURITY.md`, seção "Labs que exigem modo privilegiado".
+
+Isso não muda o desenho geral: o Docker "aninhado" ainda roda 100%
+dentro da máquina do usuário, nunca no nosso servidor.
+
 ## Domínio único
 
 `codisec.com.br` serve tudo (`/`, `/blog`, `/labs`, `/install.sh`,
