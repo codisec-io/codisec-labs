@@ -1,0 +1,25 @@
+{
+  "name": "codisec-site",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "catalog": "python3 ../scripts/build_catalog.py",
+    "predev": "npm run catalog",
+    "dev": "astro dev",
+    "prebuild": "npm run catalog",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.2"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}

@@ -1,0 +1,132 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TerminalHero from '../components/TerminalHero.astro';
+import PostListItem from '../components/PostListItem.astro';
+import LabCard from '../components/LabCard.astro';
+
+const allPosts = await getCollection('blog');
+const recentPosts = allPosts
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const allLabs = await getCollection('labs');
+const featuredIds = [
+  'appsec-idor-api',
+  'appsec-ssrf-basics',
+  'devsecops-iac-terraform-tfsec',
+  'devops-docker-fundamentos',
+];
+const featuredLabs = featuredIds
+  .map((id) => allLabs.find((lab) => lab.data.id === id))
+  .filter((lab) => lab !== undefined);
+---
+<BaseLayout
+  title="Codisec — Aprenda AppSec e DevOps quebrando coisas de verdade"
+  description="Labs práticos de segurança e infraestrutura que rodam localmente, de graça, sem depender de nuvem nem de máquina potente."
+>
+  <section class="hero" style="border-top:none;">
+    <div>
+      <h1>Aprenda AppSec e DevOps quebrando coisas de verdade,<br>na sua máquina.</h1>
+      <p class="lede">
+        Labs práticos de segurança e infraestrutura que rodam localmente,
+        de graça, sem depender de nuvem nem de máquina potente. Escolha um
+        lab, rode um comando, explore a falha, corrija de verdade.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="/labs">Ver os labs</a>
+        <a class="btn-ghost" href="#instalar">Instalar a CLI</a>
+      </div>
+    </div>
+    <TerminalHero />
+  </section>
+
+  <section id="blog">
+    <div class="section-head">
+      <h2>Do blog</h2>
+      <a href="/blog">ver todos os artigos</a>
+    </div>
+    {recentPosts.length > 0 ? (
+      <div class="post-list">
+        {recentPosts.map((post) => (
+          <PostListItem
+            slug={post.data.id ?? post.id}
+            title={post.data.title}
+            excerpt={post.data.excerpt}
+            date={post.data.date}
+            tags={post.data.tags}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="lab-empty">Nenhum post publicado ainda.</p>
+    )}
+  </section>
+
+  <section id="labs">
+    <div class="section-head">
+      <h2>Labs em destaque</h2>
+      <a href="/labs">ver catálogo completo</a>
+    </div>
+    <div class="lab-grid">
+      {featuredLabs.map((lab) => (
+        <LabCard
+          id={lab!.data.id}
+          title={lab!.data.title}
+          description={lab!.data.description}
+          category={lab!.data.category}
+          difficulty={lab!.data.difficulty}
+          duration={lab!.data.duration}
+        />
+      ))}
+    </div>
+  </section>
+
+  <section id="como-funciona">
+    <div class="section-head"><h2>Como funciona</h2></div>
+    <div class="pipeline">
+      <div class="pipeline-track">
+        <div class="pipeline-node">1</div>
+        <div class="pipeline-node">2</div>
+        <div class="pipeline-node">3</div>
+      </div>
+      <div class="pipeline-content">
+        <div class="pipeline-col" id="instalar">
+          <h3>Instale a CLI</h3>
+          <p>Único pré-requisito: Docker Desktop instalado e aberto.</p>
+
+          <div class="install-block">
+            <span class="os-label">Linux</span>
+            <code>curl -sSL codisec.com.br/install.sh | bash</code>
+          </div>
+
+          <div class="install-block">
+            <span class="os-label">macOS</span>
+            <code>curl -sSL codisec.com.br/install.sh | bash</code>
+          </div>
+
+          <div class="install-block">
+            <span class="os-label">Windows (PowerShell)</span>
+            <code>iwr codisec.com.br/install.ps1 -useb | iex</code>
+          </div>
+        </div>
+        <div class="pipeline-col">
+          <h3>Escolha um lab</h3>
+          <p>Veja o catálogo no site, filtre por categoria e nível.</p>
+          <div class="install-block">
+            <span class="os-label" aria-hidden="true">&nbsp;</span>
+            <code>codisec lab list</code>
+          </div>
+        </div>
+        <div class="pipeline-col">
+          <h3>Rode localmente</h3>
+          <p>O ambiente sobe no seu próprio Docker — nada passa pelo nosso servidor.</p>
+          <div class="install-block">
+            <span class="os-label" aria-hidden="true">&nbsp;</span>
+            <code>codisec lab start appsec-idor-api</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

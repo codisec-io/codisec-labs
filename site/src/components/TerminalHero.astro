@@ -1,0 +1,45 @@
+---
+// Digitação do terminal do hero — porta o efeito de site-design/index.html.
+// Mostra o comando real do lab appsec-idor-api (codisec lab start
+// appsec-idor-api) e a saída que ele produz quando a imagem publicada
+// em ghcr.io/codisec/lab-flask-idor existir (ainda não existe — ver
+// image_published em catalog.json).
+---
+<div class="terminal">
+  <div class="terminal-bar"><span></span><span></span><span></span></div>
+  <div class="terminal-body" id="term"></div>
+</div>
+
+<script>
+  const lines = [
+    '<span class="prompt">$</span> codisec lab start appsec-idor-api',
+    '<span class="dim">Baixando ghcr.io/codisec/lab-flask-idor:latest...</span>',
+    '<span class="dim">Subindo container local...</span>',
+    '<span class="ok">✓ Lab pronto. Terminal conectado.</span>',
+    '',
+    '<span class="prompt">$</span> curl localhost:5000/api/users/2/profile',
+    '<span class="dim">{"email":"user2@ex.com","ssn_last4":"4821"}</span>',
+  ];
+
+  function startTyping() {
+    const el = document.getElementById('term');
+    if (!el) return;
+    let html = '';
+    let li = 0;
+
+    function typeNextLine() {
+      if (li >= lines.length) {
+        el!.innerHTML = html + '<span id="cursor"></span>';
+        return;
+      }
+      html += (li > 0 ? '<br>' : '') + lines[li];
+      el!.innerHTML = html + '<span id="cursor"></span>';
+      li++;
+      setTimeout(typeNextLine, 480);
+    }
+    setTimeout(typeNextLine, 500);
+  }
+
+  startTyping();
+  document.addEventListener('astro:page-load', startTyping);
+</script>

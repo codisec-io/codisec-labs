@@ -1,0 +1,17 @@
+/* Tokens do design system — copiados de site-design/index.html.
+   Não inventar cores novas aqui; qualquer ajuste de paleta deve ser
+   feito primeiro no mockup de referência, depois replicado aqui. */
+:root {
+  --ink: #0D1B2A;
+  --surface: #141F2E;
+  --surface-2: #1A2738;
+  --hairline: #26364A;
+  --text: #E9EEF3;
+  --muted: #8FA0B3;
+  --amber: #E8A33D;
+  --amber-dim: #6B5228;
+  --cyan: #4FC3D9;
+  --diff-beginner: #6FCF97;
+  --diff-intermediate: #E8A33D;
+  --diff-advanced: #E06C6C;
+}

@@ -1,0 +1,28 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  duration: string;
+}
+
+const { id, title, description, category, difficulty, duration } = Astro.props;
+
+const difficultyLabel: Record<string, string> = {
+  beginner: 'iniciante',
+  intermediate: 'intermediário',
+  advanced: 'avançado',
+};
+---
+<a href={`/labs/${id}`} class={`lab-card ${difficulty}`} data-category={category} data-difficulty={difficulty}>
+  <div class="cat">{category}</div>
+  <h3>{title}</h3>
+  <p>{description}</p>
+  <div class="lab-meta">
+    <div class="diff-label">
+      <span class={`diff-dot ${difficulty}`}></span>{difficultyLabel[difficulty]} · {duration}
+    </div>
+  </div>
+</a>
