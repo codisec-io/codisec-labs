@@ -1,0 +1,36 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { data } = post;
+const { Content } = await render(post);
+
+const formattedDate = data.date.toLocaleDateString('pt-BR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+---
+<BaseLayout title={`${data.title} — Codisec`} description={data.excerpt}>
+  <section style="border-top:none; max-width:74ch;">
+    <p class="post-date" style="margin-bottom:8px;">{formattedDate} · {data.author}</p>
+    <h1 style="font-size:32px; line-height:1.2; margin-bottom:18px;">{data.title}</h1>
+    {data.tags.length > 0 && (
+      <div class="tags" style="margin-bottom:28px;">
+        {data.tags.map((tag) => <span>{tag}</span>)}
+      </div>
+    )}
+    <div class="prose">
+      <Content />
+    </div>
+  </section>
+</BaseLayout>

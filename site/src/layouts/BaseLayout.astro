@@ -9,9 +9,12 @@ interface Props {
   ogImage?: string;
 }
 
-const { title, description, ogImage = '/og-default.png' } = Astro.props;
+const { title, description, ogImage } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const ogImageURL = new URL(ogImage, Astro.site);
+// Sem imagem OG própria ainda (entregável de design separado — ver
+// docs/CHECKLIST.md) — omite as meta tags de imagem em vez de apontar
+// pra um arquivo que não existe.
+const ogImageURL = ogImage ? new URL(ogImage, Astro.site) : null;
 ---
 
 <!doctype html>
@@ -27,12 +30,12 @@ const ogImageURL = new URL(ogImage, Astro.site);
   <meta property="og:type" content="website" />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
-  <meta property="og:image" content={ogImageURL} />
   <meta property="og:url" content={canonicalURL} />
-  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:card" content={ogImageURL ? 'summary_large_image' : 'summary'} />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
-  <meta name="twitter:image" content={ogImageURL} />
+  {ogImageURL && <meta property="og:image" content={ogImageURL} />}
+  {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
 
   <link rel="alternate" type="application/rss+xml" title="Codisec — Blog" href="/rss.xml" />
 
