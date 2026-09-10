@@ -9,7 +9,7 @@ próxima. Marque conforme for concluindo.
 > `docs/ARCHITECTURE.md`), e todo o escopo do
 > `docs/CLAUDE_CODE_PROMPT.md` implementado: `cli/`, site em Astro
 > (blog com 3 posts reais + catálogo de labs), `install.sh` +
-> `install.ps1`, `scripts/build_catalog.py`, os 4 workflows de GitHub
+> `install.ps1`, `site/scripts/build-catalog.mjs`, os 4 workflows de GitHub
 > Actions, `docs/ARCHITECTURE.md`/`DEPLOY.md`/`SECURITY.md`
 > reescritos. Verificado: build do site, testes da CLI (incluindo
 > integração real contra Docker) e `install.sh` (contra um fixture
@@ -28,11 +28,16 @@ próxima. Marque conforme for concluindo.
 - [ ] Confirmar que o Docker Desktop está instalado e rodando na sua
       máquina (necessário pra `cli/`, testado nesta sessão contra o
       Docker do ambiente de dev — confirme que está igual na sua)
-- [ ] Criar a organização/conta no GitHub que vai hospedar o repo (ex:
-      `github.com/codisec`) — o repo local já existe com commits, falta
-      só criar o remote e dar `git push` (`cli/go.mod` e os workflows já
-      assumem `github.com/codisec/codisec-labs`, ajuste se o nome final
-      for diferente)
+- [x] Remote no GitHub criado e conectado —
+      `github.com/Ferhummes84/codisec-labs` (conta pessoal, não a
+      organização `codisec` que `cli/go.mod`, `cli/.goreleaser.yml` e
+      os `install.sh`/`install.ps1` ainda assumem). **Pendente decidir:**
+      migrar pra uma org `codisec` depois, ou ajustar essas referências
+      pro nome real do repo agora — enquanto não for decidido,
+      `install.sh`/`install.ps1` e o release da CLI (`goreleaser`) vão
+      resolver a URL errada. Não mexi nisso nesta sessão por ser fora do
+      escopo pedido (correção do build da Cloudflare) — sinalizando pra
+      você decidir.
 - [ ] Criar conta no Cloudflare Pages (se ainda não tiver) — o domínio
       `codisec.com.br` já está no Cloudflare, então é só conectar o
       projeto (ver `docs/DEPLOY.md`)
@@ -40,7 +45,7 @@ próxima. Marque conforme for concluindo.
 ## Fase 1 — Implementação do escopo do CLAUDE_CODE_PROMPT.md
 
 - [x] `cli/`, site em Astro (blog + catálogo de labs), `install.sh` +
-      `install.ps1`, `scripts/build_catalog.py`, GitHub Actions de
+      `install.ps1`, `site/scripts/build-catalog.mjs`, GitHub Actions de
       build/deploy, `legacy/server-side-model/` com o código antigo —
       tudo gerado e commitado nesta sessão.
 - [x] Revisado: nenhum endpoint HTTP novo foi criado além do site

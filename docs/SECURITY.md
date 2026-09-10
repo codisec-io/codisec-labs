@@ -52,7 +52,7 @@ Mitigações:
   mantenedor (ver processo em `CONTRIBUTING.md`, que já não aceita PR
   externo tocando `labs/` justamente por isso).
 - `catalog.json`/`labs/<id>.json` (o que a CLI de fato lê) são **gerados
-  automaticamente** por `scripts/build_catalog.py` a partir dos
+  automaticamente** por `site/scripts/build-catalog.mjs` a partir dos
   `lab.yaml` — nunca editados à mão, nunca aceitam input de fora do
   repositório.
 - A CLI (`internal/catalog.Client`) tem a origem do catálogo **fixa em
@@ -107,8 +107,8 @@ lab ensina (build, run, volumes) isso não é perceptível.
   declara `requires_privileged: true` hoje — nenhum outro lab precisa
   disso, e não deve ganhar esse campo "de graça" só porque é possível;
   cada caso novo merece a mesma análise acima antes de marcar `true`.
-- `scripts/build_catalog.py` propaga esse campo pro `catalog.json` e
-  pro `labs/<id>.json` — é assim que tanto a CLI quanto o site sabem
+- `site/scripts/build-catalog.mjs` propaga esse campo pro `catalog.json`
+  e pro `labs/<id>.json` — é assim que tanto a CLI quanto o site sabem
   disso sem reimplementar a leitura do `lab.yaml`.
 - A CLI (`cmd/start.go`) **nunca** sobe um container privilegiado em
   silêncio: se `requires_privileged` for `true`, ela mostra um aviso

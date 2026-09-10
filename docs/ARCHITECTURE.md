@@ -58,7 +58,7 @@ mantenedor
 │                                                                │
 │  push em site/**, labs/**  → deploy-site.yml                   │
 │                                (gera catalog.json via            │
-│                                 scripts/build_catalog.py,         │
+│                                 site/scripts/build-catalog.mjs,   │
 │                                 builda o Astro, publica no        │
 │                                 Cloudflare Pages)                  │
 │                                                                │

@@ -11,9 +11,9 @@ Visão rápida do que é cada coisa.
 | `site/src/content.config.ts` | Define as duas Content Collections: `blog` (Markdown local) e `labs` (lê `labs/*/lab.yaml` direto da raiz do repo via Content Layer `glob()` — não duplica os arquivos dentro de `site/`). |
 | `labs/*/lab.yaml` | 11 labs — 4 appsec, 4 devsecops, 3 devops. Fonte da verdade de todo o catálogo. |
 | `labs/schema.json` | Contrato formal que todo `lab.yaml` precisa seguir. |
-| `scripts/validate_lab_schema.py` | Valida todos os `lab.yaml` contra o schema: `python3 scripts/validate_lab_schema.py`. |
-| `scripts/build_catalog.py` | Gera `site/public/catalog.json` e `site/public/labs/<id>.json` a partir dos `lab.yaml` válidos — consumido pelo site (filtro client-side) e pela CLI. Roda automaticamente antes de `npm run dev`/`build` (ver `site/package.json`). |
-| `scripts/_lab_common.py` | Lógica de parse+validação compartilhada entre os dois scripts acima. |
+| `scripts/validate_lab_schema.py` | Valida todos os `lab.yaml` contra o schema: `python3 scripts/validate_lab_schema.py` (`pip install -r scripts/requirements.txt` antes). Usado pelo gate de CI em `.github/workflows/validate-labs.yml` — único lugar que ainda usa Python no repo. |
+| `scripts/_lab_common.py` | Lógica de parse+validação usada por `validate_lab_schema.py`. |
+| `site/scripts/build-catalog.mjs` | Gera `site/public/catalog.json` e `site/public/labs/<id>.json` a partir dos `lab.yaml` válidos (Node — `js-yaml` + `ajv`) — consumido pelo site (filtro client-side) e pela CLI. Roda automaticamente antes de `npm run dev`/`build` (ver `site/package.json`). Substitui a versão antiga em Python, que quebrava o deploy na Cloudflare Pages por depender de `pip install` num ambiente sem Python configurado. |
 
 **Pendente:** nenhuma das imagens Docker (`ghcr.io/codisec/lab-*`)
 referenciadas nos `lab.yaml` foi construída ainda, exceto

@@ -7,7 +7,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "catalog": "python3 ../scripts/build_catalog.py",
+    "catalog": "node scripts/build-catalog.mjs",
     "predev": "npm run catalog",
     "dev": "astro dev",
     "prebuild": "npm run catalog",
@@ -18,7 +18,9 @@
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.3.2"
+    "ajv": "^8.20.0",
+    "astro": "^7.3.2",
+    "js-yaml": "^5.4.1"
   },
   "allowScripts": {
     "esbuild": true

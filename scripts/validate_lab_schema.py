@@ -3,7 +3,7 @@
 Valida todos os labs/<lab-id>/lab.yaml contra labs/schema.json.
 
 Uso local (antes de abrir o PR):
-    pip install pyyaml jsonschema
+    pip install -r scripts/requirements.txt
     python3 scripts/validate_lab_schema.py
 
 Retorna exit code 0 se tudo estiver válido, 1 caso contrário — é

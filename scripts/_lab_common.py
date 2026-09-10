@@ -1,8 +1,15 @@
 """Carrega e valida labs/<id>/lab.yaml contra labs/schema.json.
 
-Lógica compartilhada entre scripts/validate_lab_schema.py (relatório
-legível, gate de CI) e scripts/build_catalog.py (gera catalog.json só
-quando todos os labs são válidos). Não roda nada sozinho.
+Usado por scripts/validate_lab_schema.py (relatório legível, gate de
+CI em .github/workflows/validate-labs.yml). Não roda nada sozinho.
+
+A geração do catalog.json (antes feita aqui em Python por
+scripts/build_catalog.py) foi reescrita em Node —
+site/scripts/build-catalog.mjs — porque rodava fora do pipeline de
+instalação do site (`npm ci`) e quebrou o deploy na Cloudflare Pages,
+que não tem Python configurado. Esta validação em Python continua
+existindo só para o gate de CI de labs/, que é um workflow separado
+com seu próprio `pip install` (ver scripts/requirements.txt).
 """
 import json
 from dataclasses import dataclass, field

@@ -49,7 +49,8 @@ Cloudflare Pages).
 
 ## Rodando o site localmente (dev)
 
-Pré-requisitos: Node 22+, Python 3.
+Pré-requisito: Node 22+ (100% Node — não precisa de Python pra
+buildar/rodar o site).
 
 ```bash
 git clone https://github.com/codisec/codisec-labs.git
@@ -59,9 +60,9 @@ npm run dev
 ```
 
 Abra `http://localhost:4321`. O `npm run dev`/`npm run build` já rodam
-`scripts/build_catalog.py` sozinhos antes (hook `predev`/`prebuild` em
-`site/package.json`) pra gerar `catalog.json` a partir dos
-`labs/*/lab.yaml`.
+`site/scripts/build-catalog.mjs` sozinhos antes (hook
+`predev`/`prebuild` em `site/package.json`) pra gerar `catalog.json` a
+partir dos `labs/*/lab.yaml`.
 
 ## Rodando a CLI localmente (dev)
 

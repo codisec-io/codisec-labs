@@ -16,15 +16,21 @@ O domínio `codisec.com.br` já está no Cloudflare.
 2. Configuração de build:
    - **Build command:**
      ```bash
-     pip install pyyaml jsonschema && python3 scripts/build_catalog.py && npm --prefix site ci && npm --prefix site run build
+     npm --prefix site ci && npm --prefix site run build
      ```
+     (100% Node — `npm run build` já gera o `catalog.json` sozinho via
+     `site/scripts/build-catalog.mjs`, hook `prebuild` em
+     `site/package.json`. Não precisa de Python/pip no ambiente de
+     build; uma versão anterior deste comando dependia de `pip install
+     pyyaml jsonschema`, que quebrava porque o ambiente de build da
+     Cloudflare não tem Python configurado por padrão.)
    - **Build output directory:** `site/dist`
    - **Root directory:** `/` (raiz do repo — o comando de build já entra
      em `site/` sozinho)
 3. Adicionar o domínio customizado `codisec.com.br` ao projeto (painel
    do projeto → Custom domains).
-4. Todo push em `main` que toque `site/**`, `labs/**` ou
-   `scripts/build_catalog.py` dispara um novo deploy automaticamente.
+4. Todo push em `main` que toque `site/**` ou `labs/**` dispara um novo
+   deploy automaticamente.
 
 **Alternativa com GitHub Actions:** `.github/workflows/deploy-site.yml`
 já existe pronto, fazendo o mesmo build e publicando via

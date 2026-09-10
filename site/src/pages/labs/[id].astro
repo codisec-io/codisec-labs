@@ -19,7 +19,7 @@ interface Props {
 const { lab } = Astro.props;
 const { data } = lab;
 
-// Mesma heurística de scripts/build_catalog.py — se mudar lá, mudar aqui.
+// Mesma heurística de site/scripts/build-catalog.mjs — se mudar lá, mudar aqui.
 const PLACEHOLDER_MARKERS = ['SEU_USUARIO', 'ghcr.io/codisec/lab-'];
 const imagePublished = !PLACEHOLDER_MARKERS.some((marker) => data.image.includes(marker));
 

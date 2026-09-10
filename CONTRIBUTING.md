@@ -37,7 +37,7 @@ implementa e publica.
    concluída — não confie em "o usuário disse que terminou".
 5. Valide localmente antes de commitar:
    ```bash
-   pip install pyyaml jsonschema
+   pip install -r scripts/requirements.txt
    python3 scripts/validate_lab_schema.py
    ```
 6. Abra um PR **na branch interna** (ou commit direto em `main` se for só

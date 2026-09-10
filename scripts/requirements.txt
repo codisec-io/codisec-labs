@@ -1,0 +1,7 @@
+# Dependências de scripts/validate_lab_schema.py — o único script
+# Python que resta no repositório (a geração do catalog.json foi
+# reescrita em Node, ver site/scripts/build-catalog.mjs).
+#
+# Uso: pip install -r scripts/requirements.txt
+pyyaml==6.0.2
+jsonschema==4.23.0
