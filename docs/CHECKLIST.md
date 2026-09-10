@@ -3,37 +3,50 @@
 Ordem pensada pra você (Fernando) testar cada etapa antes de avançar pra
 próxima. Marque conforme for concluindo.
 
+> **Fases 0 e 1 já concluídas nesta sessão** (commits em `main`, ver
+> `git log`): repositório git inicializado, domínio decidido (único,
+> `codisec.com.br`, com redirect de `labs.codisec.com.br` — ver
+> `docs/ARCHITECTURE.md`), e todo o escopo do
+> `docs/CLAUDE_CODE_PROMPT.md` implementado: `cli/`, site em Astro
+> (blog com 3 posts reais + catálogo de labs), `install.sh` +
+> `install.ps1`, `scripts/build_catalog.py`, os 4 workflows de GitHub
+> Actions, `docs/ARCHITECTURE.md`/`DEPLOY.md`/`SECURITY.md`
+> reescritos. Verificado: build do site, testes da CLI (incluindo
+> integração real contra Docker) e `install.sh` (contra um fixture
+> local) todos passando. **Ainda não verificado nesta sessão:**
+> `install.ps1` num Windows de verdade, e `cli/.goreleaser.yml` rodando
+> de ponta a ponta (sem repositório remoto/tag real ainda) — seguem
+> pendentes abaixo, nas fases originais.
+
 ---
 
 ## Fase 0 — Decisões antes de começar
 
-- [ ] Confirmar estrutura de domínio: tudo em `codisec.com.br` (com
-      `/blog` e `/labs`) ou `labs.codisec.com.br` separado? (o
-      `docs/CLAUDE_CODE_PROMPT.md` deixa essa decisão em aberto pro
-      Claude Code — se você já tem preferência, resolve antes de rodar
-      o prompt, economiza uma pergunta de ida-e-volta)
+- [x] Estrutura de domínio: único domínio `codisec.com.br`, com
+      `labs.codisec.com.br` como redirect — decidido e documentado em
+      `docs/ARCHITECTURE.md`.
 - [ ] Confirmar que o Docker Desktop está instalado e rodando na sua
-      máquina (você vai precisar dele em quase toda fase abaixo)
+      máquina (necessário pra `cli/`, testado nesta sessão contra o
+      Docker do ambiente de dev — confirme que está igual na sua)
 - [ ] Criar a organização/conta no GitHub que vai hospedar o repo (ex:
-      `github.com/codisec`) — os comandos abaixo assumem esse nome, ajuste
-      se for diferente
+      `github.com/codisec`) — o repo local já existe com commits, falta
+      só criar o remote e dar `git push` (`cli/go.mod` e os workflows já
+      assumem `github.com/codisec/codisec-labs`, ajuste se o nome final
+      for diferente)
 - [ ] Criar conta no Cloudflare Pages (se ainda não tiver) — o domínio
       `codisec.com.br` já está no Cloudflare, então é só conectar o
-      projeto
+      projeto (ver `docs/DEPLOY.md`)
 
-## Fase 1 — Rodar o prompt no Claude Code
+## Fase 1 — Implementação do escopo do CLAUDE_CODE_PROMPT.md
 
-- [ ] Descompactar `codisec-labs.zip` numa pasta local
-- [ ] Abrir essa pasta no Claude Code (`claude` no terminal, dentro da pasta)
-- [ ] Colar o conteúdo de `docs/CLAUDE_CODE_PROMPT.md` (a partir de
-      "## Contexto") como primeira mensagem
-- [ ] Acompanhar a implementação — vai gerar: `cli/`, site em Astro
-      (blog + catálogo de labs), `install.sh` + `install.ps1`,
-      `scripts/build_catalog.py`, GitHub Actions de build/deploy,
-      `legacy/server-side-model/` com o código antigo movido pra lá
-- [ ] Revisar o que foi gerado antes de aceitar — em especial, confira
-      que **nenhum** endpoint HTTP novo foi criado além do site estático
-      (é o requisito de segurança inegociável do prompt)
+- [x] `cli/`, site em Astro (blog + catálogo de labs), `install.sh` +
+      `install.ps1`, `scripts/build_catalog.py`, GitHub Actions de
+      build/deploy, `legacy/server-side-model/` com o código antigo —
+      tudo gerado e commitado nesta sessão.
+- [x] Revisado: nenhum endpoint HTTP novo foi criado além do site
+      estático (a CLI só fala com `codisec.com.br` — leitura de
+      catálogo estático — e com o Docker local do usuário; ver
+      `docs/SECURITY.md`).
 
 ## Fase 2 — Construir as imagens Docker dos labs (o que falta desde o início)
 
@@ -63,20 +76,25 @@ Você tem 11 `lab.yaml` prontos, mas nenhuma das imagens
 
 ## Fase 3 — Você testa localmente (primeiro tester)
 
-- [ ] Compilar a CLI localmente (o Claude Code deixa isso pronto, ex:
-      `go build -o codisec ./cli` ou equivalente)
-- [ ] Rodar `./codisec lab list` — confirma que lê o catálogo estático
-      corretamente
+- [x] Compilar a CLI localmente (`cd cli && go build -o codisec .`) —
+      já feito e testado nesta sessão, incluindo um ciclo completo
+      start→validate→stop contra Docker real (ver commit "CLI codisec
+      em Go"), mas contra um catálogo local temporário, não o de
+      produção (que ainda não existe — ver Fase 4). Vale repetir
+      contra os labs reais assim que publicados (Fase 2).
+- [ ] Rodar `./codisec lab list` contra o catálogo publicado de verdade
+      em `codisec.com.br` — confirma que lê certo em produção
 - [ ] Rodar `./codisec lab start <um-dos-3-labs-publicados>`
 - [ ] Confirmar que o terminal abre e conecta no container
 - [ ] Seguir os passos do lab você mesmo, do jeito que um usuário
       seguiria — teoria, comando, validação
-- [ ] Rodar `./codisec lab validate <task-id>` em cada tarefa e conferir
-      se a mensagem de sucesso/erro faz sentido
+- [ ] Rodar `./codisec lab validate <id> <task-id>` em cada tarefa e
+      conferir se a mensagem de sucesso/erro faz sentido
 - [ ] Rodar `./codisec lab stop <id>` e confirmar que o container some
       (`docker ps` não deve mais listar ele)
-- [ ] Testar o `break_again_command` / `recovery.reset_command` de pelo
-      menos 1 lab, pra confirmar que o ciclo Failure→Recovery funciona
+- [ ] Testar o `break_again_command` / `recovery.reset_command`
+      (`codisec lab reset <id>`) de pelo menos 1 lab, pra confirmar que
+      o ciclo Failure→Recovery funciona
 
 ## Fase 4 — Site estático no ar
 
@@ -87,11 +105,13 @@ Você tem 11 `lab.yaml` prontos, mas nenhuma das imagens
       → Pages → "Create a project" → conectar o repo GitHub)
 - [ ] Configurar o build command e output directory do Astro no
       Cloudflare Pages (geralmente `npm run build` e `dist/`)
-- [ ] No DNS do Cloudflare, criar o CNAME de `labs.codisec.com.br` (ou
-      `codisec.com.br`, conforme decidido na Fase 0) apontando pro
-      projeto Cloudflare Pages, com proxy (nuvem laranja) ligado
+- [ ] No DNS do Cloudflare, apontar `codisec.com.br` (Custom domain do
+      projeto Cloudflare Pages) com proxy (nuvem laranja) ligado
+- [ ] Criar a Redirect Rule de `labs.codisec.com.br/*` →
+      `https://codisec.com.br/$1` (ver `docs/DEPLOY.md`, seção 1)
 - [ ] Esperar propagar e abrir o domínio real no navegador — confirmar
-      que carrega com HTTPS automático
+      que carrega com HTTPS automático, e que
+      `labs.codisec.com.br/install.sh` redireciona certo
 
 ## Fase 5 — Publicar a CLI de verdade (GitHub Releases)
 

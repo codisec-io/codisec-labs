@@ -8,21 +8,7 @@ Site da Codisec, com duas frentes:
    na máquina do usuário, via CLI + Docker, no mesmo modelo do
    [GIRUS](https://girus.linuxtips.io) da LINUXtips. Isso significa zero
    backend exposto: nada de containers, portas ou terminal remoto
-   acessíveis pela internet.
-
-> **Nota de arquitetura:** a versão anterior deste README descrevia um
-> modelo de labs com execução server-side (containers no servidor,
-> terminal via WebSocket). Esse modelo foi abandonado por razão de
-> segurança — ver `docs/SECURITY.md`. O código antigo já foi movido para
-> `legacy/server-side-model/` (não faz parte do deploy). O escopo também
-> cresceu: o projeto agora é o site completo da Codisec (blog + labs),
-> não só o catálogo. Veja o prompt de implementação completo em
-> `docs/CLAUDE_CODE_PROMPT.md`.
-
-> **Design de referência:** abra `site-design/index.html` no navegador
-> pra ver o sistema de design definido pra homepage (paleta, tipografia,
-> componentes de blog e de lab). Toda implementação futura segue essa
-> direção visual.
+   acessíveis pela internet — ver `docs/ARCHITECTURE.md`.
 
 Objetivo: baixar a barreira de entrada pra quem quer aprender essas áreas
 com recursos limitados — sem custo, sem precisar de máquina potente, sem
@@ -30,57 +16,75 @@ precisar já saber configurar Kubernetes antes de começar a aprender.
 
 ## Como funciona
 
-1. O usuário acessa o site e escolhe um lab no catálogo (filtra por
+1. O usuário instala a CLI (`curl -sSL https://codisec.com.br/install.sh
+   | bash`, ou `install.ps1` no Windows).
+2. Acessa o site e escolhe um lab no catálogo (`/labs`, filtra por
    categoria e dificuldade).
-2. Clica em "Iniciar Lab" → o backend sobe um container Docker isolado
-   com o ambiente vulnerável/simulado daquele lab.
-3. Um terminal real (via WebSocket) abre no navegador, conectado direto
-   ao container.
-4. O usuário segue os passos (Theory → Practice), tenta a exploração ou a
-   configuração pedida, e clica em "Validar" — o backend roda um comando
-   de checagem DENTRO do container e confirma objetivamente se a tarefa
-   foi concluída (Failure → Recovery quando aplicável).
-5. Ao fechar/expirar (TTL de 1h), o container é destruído — cada sessão
-   começa limpa.
+3. Roda `codisec lab start <id>` — a CLI baixa a imagem Docker pública
+   do lab e sobe um container **na própria máquina do usuário**, com o
+   Docker dele.
+4. Um terminal local abre (`docker exec -it`, sem WebSocket, sem porta
+   exposta pro mundo), conectado ao container.
+5. O usuário segue os passos (Theory → Practice), tenta a exploração ou a
+   configuração pedida, e roda `codisec lab validate <id> <task-id>` —
+   a CLI roda um comando de checagem DENTRO do container e confirma
+   objetivamente se a tarefa foi concluída (Failure → Recovery via
+   `codisec lab reset <id>` quando aplicável).
+6. `codisec lab stop <id>` derruba o container — cada sessão começa
+   limpa na próxima vez.
 
 ## Arquitetura
 
 ```
-┌──────────────┐      HTTP/WS      ┌──────────────┐     Docker API     ┌─────────────────┐
-│  Frontend     │ ───────────────▶ │   Backend    │ ─────────────────▶ │ Containers dos   │
-│  (HTML/JS)    │ ◀─────────────── │  (FastAPI)   │ ◀───────────────── │ Labs (isolados)  │
-└──────────────┘                   └──────┬───────┘                    └─────────────────┘
-                                           │
-                                           ▼
-                                    ┌──────────────┐
-                                    │  /labs/*.yaml │  ← catálogo, editável via PR
-                                    └──────────────┘
+Navegador → codisec.com.br (Astro, Cloudflare Pages, só leitura)
+                    │ copia o comando
+                    ▼
+        CLI local (codisec) → Docker local do usuário → container do lab
 ```
 
-## Rodando localmente (dev)
+Nenhum ponto desse fluxo passa pelo nosso servidor além de servir
+arquivos estáticos. Ver `docs/ARCHITECTURE.md` pro diagrama completo
+(incluindo o fluxo de publicação: push → GitHub Actions → GHCR/Releases/
+Cloudflare Pages).
 
-Pré-requisito: Docker instalado e rodando.
+## Rodando o site localmente (dev)
+
+Pré-requisitos: Node 22+, Python 3.
 
 ```bash
 git clone https://github.com/codisec/codisec-labs.git
-cd codisec-labs
-docker compose up -d --build
+cd codisec-labs/site
+npm install
+npm run dev
 ```
 
-Abra `http://localhost:8080` no navegador. O backend responde em
-`http://localhost:8000`.
+Abra `http://localhost:4321`. O `npm run dev`/`npm run build` já rodam
+`scripts/build_catalog.py` sozinhos antes (hook `predev`/`prebuild` em
+`site/package.json`) pra gerar `catalog.json` a partir dos
+`labs/*/lab.yaml`.
 
-Pra derrubar tudo: `docker compose down`
+## Rodando a CLI localmente (dev)
+
+Pré-requisito: Go 1.23+ e Docker instalado e rodando.
+
+```bash
+cd cli
+go build -o codisec .
+./codisec lab list
+```
+
+Ver `cli/README.md` para mais detalhes (por que Go, estrutura interna,
+como testar).
 
 ## Labs incluídos nesta versão
 
-| Lab | Categoria | Dificuldade | Duração |
-|---|---|---|---|
-| IDOR em API REST | appsec | beginner | 30m |
-| SSRF em serviço de preview | appsec | intermediate | 40m |
-| Segurança de IaC com tfsec | devsecops | intermediate | 45m |
-| Detecção de secrets com gitleaks | devsecops | beginner | 25m |
-| Fundamentos de Docker | devops | beginner | 30m |
+11 labs validados em `labs/*/lab.yaml` (appsec, devsecops, devops,
+níveis iniciante/intermediário) — `codisec lab list` ou
+[`/labs`](https://codisec.com.br/labs) no site mostram o catálogo
+completo e atualizado. Nenhuma das imagens Docker (`ghcr.io/codisec/lab-*`)
+foi publicada ainda — é o próximo passo (ver `docs/CHECKLIST.md`, Fase 2).
+Uma exceção: o lab `devops-docker-fundamentos` usa `docker:24-dind`, uma
+imagem pública já pullável hoje.
 
 ## Contribuindo
 
@@ -95,15 +99,15 @@ Quer sugerir um lab novo ou uma funcionalidade? Abra uma
 
 ## Deploy em produção
 
-Veja [docs/DEPLOY.md](docs/DEPLOY.md) para o passo a passo de colocar isso
-no ar numa VPS barata com domínio próprio e HTTPS.
+Veja [docs/DEPLOY.md](docs/DEPLOY.md) para o passo a passo: site no
+Cloudflare Pages, CLI distribuída via GitHub Releases.
 
 ## Segurança
 
 **Leia antes de expor publicamente:** [docs/SECURITY.md](docs/SECURITY.md)
-explica os riscos do modelo de isolamento do MVP (containers com acesso
-ao Docker socket do host) e os caminhos de evolução (gVisor, Kata
-Containers, cluster Kind dedicado) conforme o projeto cresce.
+cobre o modelo de ameaça atual — integridade do binário da CLI e das
+imagens Docker dos labs, e por que a origem do catálogo é fixa em
+código na CLI.
 
 ## Licença
 

@@ -1,104 +1,92 @@
-# Deploy em produção (VPS barata)
+# Deploy em produção
 
-Guia tutorial, passo a passo, para colocar a plataforma no ar num servidor
-tipo Hetzner CX22 (~€4/mês) ou DigitalOcean Droplet básico (~$6/mês) —
-qualquer VPS com Ubuntu 22.04+, 2GB RAM, resolve pro tamanho inicial do
-projeto.
+> **Se você chegou aqui procurando o guia antigo de VPS + Docker
+> Compose:** esse modelo foi descontinuado por decisão de segurança —
+> ver `docs/SECURITY.md` e `legacy/server-side-model/README.md`. Hoje
+> não existe backend nosso pra fazer deploy — só site estático (Astro,
+> no Cloudflare Pages) e uma CLI distribuída via GitHub Releases. Ver
+> `docs/ARCHITECTURE.md` para o desenho completo.
 
-## 1. Provisionar o servidor
+## 1. Site estático no Cloudflare Pages
 
-1. Crie a VPS com Ubuntu 22.04 LTS.
-2. Aponte um domínio (ou subdomínio, ex: `labs.seudominio.com`) para o IP
-   da VPS via registro DNS tipo A.
-3. Conecte via SSH: `ssh root@SEU_IP`
+O domínio `codisec.com.br` já está no Cloudflare.
 
-## 2. Instalar Docker e Docker Compose
+1. Painel do Cloudflare → **Pages** → **Create a project** → conectar
+   o repositório GitHub (`codisec/codisec-labs`).
+2. Configuração de build:
+   - **Build command:**
+     ```bash
+     pip install pyyaml jsonschema && python3 scripts/build_catalog.py && npm --prefix site ci && npm --prefix site run build
+     ```
+   - **Build output directory:** `site/dist`
+   - **Root directory:** `/` (raiz do repo — o comando de build já entra
+     em `site/` sozinho)
+3. Adicionar o domínio customizado `codisec.com.br` ao projeto (painel
+   do projeto → Custom domains).
+4. Todo push em `main` que toque `site/**`, `labs/**` ou
+   `scripts/build_catalog.py` dispara um novo deploy automaticamente.
 
-Rode isso direto no servidor, via SSH:
+**Alternativa com GitHub Actions:** `.github/workflows/deploy-site.yml`
+já existe pronto, fazendo o mesmo build e publicando via
+`cloudflare/pages-action`. Usar essa opção em vez da integração nativa
+do painel dá mais controle/log, mas exige configurar dois secrets no
+repositório: `CLOUDFLARE_API_TOKEN` (token com permissão de Pages:Edit)
+e `CLOUDFLARE_ACCOUNT_ID`. Escolha uma das duas — não configure as duas
+ao mesmo tempo (deploy duplicado).
 
-```bash
-curl -fsSL https://get.docker.com | sh
-apt install -y docker-compose-plugin git
-```
+### Redirect de `labs.codisec.com.br`
 
-## 3. Clonar o repositório
-
-```bash
-git clone https://github.com/codisec/codisec-labs.git
-cd codisec-labs
-```
-
-## 4. Ajustar configuração de produção
-
-Edite `frontend/config.js` e troque `codisec.com.br` pelo domínio real
-que você apontou no passo 1:
-
-```bash
-nano frontend/config.js
-```
-
-Edite `backend/main.py` e troque `allow_origins=["*"]` pelo domínio real
-do frontend (por segurança — veja `docs/SECURITY.md`):
-
-```bash
-nano backend/main.py
-```
-
-## 5. Subir os containers
-
-```bash
-docker compose up -d --build
-```
-
-Confira se subiu certo:
-
-```bash
-docker compose ps
-curl http://localhost:8000/api/labs
-```
-
-Deve retornar um JSON com a lista de labs.
-
-## 6. Colocar HTTPS na frente (Caddy, mais simples que nginx+certbot)
-
-```bash
-apt install -y debian-keyring debian-archive-keyring apt-transport-https
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
-apt update && apt install -y caddy
-```
-
-Edite `/etc/caddy/Caddyfile`:
+No DNS do Cloudflare, painel → **Rules → Redirect Rules** (ou **Bulk
+Redirects**), criar um redirect 301 preservando o path:
 
 ```
-labs.seudominio.com {
-    reverse_proxy /api/* localhost:8000
-    reverse_proxy /ws/* localhost:8000
-    reverse_proxy localhost:8080
-}
+labs.codisec.com.br/*  →  https://codisec.com.br/$1
 ```
 
-Reinicie o Caddy: `systemctl restart caddy`. Ele já cuida do certificado
-TLS automaticamente via Let's Encrypt.
+Isso mantém `curl -sSL https://labs.codisec.com.br/install.sh | bash`
+funcionando (curl segue redirect) sem precisar de um segundo projeto
+Cloudflare Pages. Ver `docs/ARCHITECTURE.md` pra o porquê dessa decisão.
 
-## 7. Recarregar labs depois de um merge de PR (automatizar com GitHub Actions)
+## 2. Release da CLI (GitHub Releases)
 
-Adicione um segundo job na Action `validate-labs.yml` (ou crie um workflow
-separado `deploy.yml`) que, depois do merge na branch `main`, faz SSH no
-servidor e roda:
+A CLI (`cli/`) é distribuída como binário via GitHub Releases, buildada
+pelo GoReleaser (`cli/.goreleaser.yml`).
 
-```bash
-cd /root/codisec-labs && git pull && curl -X POST http://localhost:8000/api/admin/reload
-```
+1. Garanta que `cli/` builda e testa limpo:
+   ```bash
+   cd cli && go build ./... && go test ./...
+   ```
+2. **Antes da primeira release de verdade**, valide o `.goreleaser.yml`
+   localmente (ele ainda não foi rodado de ponta a ponta):
+   ```bash
+   cd cli && goreleaser release --snapshot --clean
+   ```
+3. Crie e envie uma tag semântica:
+   ```bash
+   git tag v0.1.0
+   git push origin v0.1.0
+   ```
+4. `.github/workflows/release-cli.yml` dispara sozinho: builda os 5
+   binários (linux/amd64, linux/arm64, darwin/amd64, darwin/arm64,
+   windows/amd64), gera `checksums.txt`, assina com `cosign` (keyless,
+   via OIDC do GitHub Actions — não precisa gerenciar chave privada) e
+   publica tudo em GitHub Releases.
+5. Confirme em `github.com/codisec/codisec-labs/releases` que os
+   arquivos `codisec_<os>_<arch>.tar.gz`/`.zip` e `checksums.txt`
+   apareceram.
 
-Isso fecha o ciclo colaborativo: PR aprovado e mergeado → labs aparecem
-no site automaticamente, sem downtime e sem precisar reiniciar o backend.
+`site/public/install.sh` e `install.ps1` resolvem sempre a **última**
+release via `api.github.com/repos/codisec/codisec-labs/releases/latest`
+— não precisa atualizar nada no site quando uma nova versão da CLI sai.
 
-## 8. Monitoramento básico (opcional, recomendado)
+## 3. Checklist pós-deploy
 
-```bash
-docker compose logs -f backend
-```
+- [ ] `https://codisec.com.br` abre com HTTPS válido
+- [ ] `https://codisec.com.br/catalog.json` retorna os 11 labs
+- [ ] `https://codisec.com.br/labs/<id>` abre pra qualquer lab do catálogo
+- [ ] `curl -sSL https://codisec.com.br/install.sh | bash` instala a CLI
+      numa máquina limpa e `codisec lab list` funciona
+- [ ] `https://labs.codisec.com.br` redireciona pra `codisec.com.br`
 
-Para algo mais robusto, considere expor `/api/labs` num healthcheck
-externo (ex: UptimeRobot, grátis) apontando pro seu domínio.
+Ver `docs/CHECKLIST.md` para o roteiro completo, passo a passo, de
+colocar tudo no ar pela primeira vez.
