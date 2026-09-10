@@ -1,0 +1,77 @@
+# Config do GoReleaser (schema v2) pra build multi-plataforma da CLI,
+# disparado por tag (v*.*.*) via ../.github/workflows/release-cli.yml.
+#
+# NOTA: escrito à mão seguindo a documentação do goreleaser v2
+# (https://goreleaser.com) — ainda não rodado de verdade com o binário
+# `goreleaser` (não deu pra instalar nesta sessão sem um download muito
+# lento). Antes do primeiro release de verdade, valide localmente com
+# `goreleaser release --snapshot --clean` a partir da pasta cli/.
+version: 2
+
+project_name: codisec
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: codisec
+    main: .
+    binary: codisec
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      # Windows/arm64 não é um alvo pedido no escopo original.
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w -X github.com/codisec/codisec-labs/cli/cmd.version={{ .Version }}
+
+archives:
+  - id: codisec
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: >-
+      codisec_{{ .Os }}_{{ .Arch }}
+
+checksum:
+  name_template: "checksums.txt"
+
+# Assinatura dos binários com cosign via GitHub OIDC (keyless) — sem
+# precisar gerenciar chave privada como secret. Requer permissions:
+# id-token: write no workflow que chama o goreleaser (ver
+# ../.github/workflows/release-cli.yml).
+signs:
+  - cmd: cosign
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - --yes
+    artifacts: checksum
+    output: true
+
+release:
+  github:
+    owner: codisec
+    name: codisec-labs
+  # catalog.json e labs/*.json não fazem parte da release da CLI — só
+  # os binários, checksums.txt e as assinaturas.
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
