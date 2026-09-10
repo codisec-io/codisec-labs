@@ -1,0 +1,65 @@
+name: Deploy do site
+
+# Builda catalog.json a partir dos labs/*/lab.yaml e publica o site
+# Astro no Cloudflare Pages a cada push em main que mexa em site/,
+# labs/ ou nos scripts que geram o catálogo.
+#
+# Alternativa mais simples (menos secrets pra gerenciar): configurar o
+# Cloudflare Pages nativo (painel → Pages → Git integration) com build
+# command `pip install pyyaml jsonschema && python3
+# scripts/build_catalog.py && npm --prefix site ci && npm --prefix site
+# run build` e output directory `site/dist` — sem precisar deste
+# workflow nem dos secrets CLOUDFLARE_API_TOKEN/CLOUDFLARE_ACCOUNT_ID.
+# Optamos pela versão com Action explícita por dar mais controle e
+# logs mais transparentes, mas as duas funcionam (ver docs/DEPLOY.md).
+#
+# NOTA: não rodou de verdade nesta sessão (sem remote no GitHub, sem
+# projeto Cloudflare Pages criado ainda — ver docs/CHECKLIST.md Fase 4).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "labs/**"
+      - "scripts/build_catalog.py"
+      - "scripts/_lab_common.py"
+      - ".github/workflows/deploy-site.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências do catálogo
+        run: pip install pyyaml jsonschema
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: site/package-lock.json
+
+      - name: Instalar dependências do site
+        working-directory: site
+        run: npm ci
+
+      - name: Build do site
+        # `npm run build` já roda scripts/build_catalog.py sozinho via
+        # o hook "prebuild" (ver site/package.json) — não precisa de um
+        # passo separado pra gerar o catalog.json antes.
+        working-directory: site
+        run: npm run build
+
+      - name: Deploy no Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: codisec-labs
+          directory: site/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

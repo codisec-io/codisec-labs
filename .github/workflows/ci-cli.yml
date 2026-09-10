@@ -1,0 +1,39 @@
+name: CI da CLI
+
+# Feedback rápido em toda mudança em cli/**, sem esperar uma tag de
+# release. Os testes de integração em internal/dockerrun usam o Docker
+# que já vem instalado nos runners ubuntu-latest do GitHub Actions —
+# se por algum motivo não houver Docker disponível, eles pulam sozinhos
+# (ver newTestRunner em dockerrun_integration_test.go).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cli/**"
+      - ".github/workflows/ci-cli.yml"
+  pull_request:
+    paths:
+      - "cli/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27"
+          cache-dependency-path: cli/go.sum
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go build
+        run: go build ./...
+
+      - name: go test (inclui testes de integração contra Docker real)
+        run: go test ./... -v
