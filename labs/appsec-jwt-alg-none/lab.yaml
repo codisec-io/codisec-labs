@@ -10,7 +10,7 @@ description: >
 image: ghcr.io/codisec/lab-flask-jwt-alg-none:latest
 tags: [jwt, authentication, broken-auth, api]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: [5000]
 
 tasks:

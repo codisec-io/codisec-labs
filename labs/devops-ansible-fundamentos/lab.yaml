@@ -10,7 +10,7 @@ description: >
 image: ghcr.io/codisec/lab-ansible-fundamentos:latest
 tags: [ansible, iac, configuration-management, fundamentos]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: []
 
 tasks:

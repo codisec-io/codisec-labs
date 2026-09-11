@@ -11,7 +11,7 @@ description: >
 image: ghcr.io/SEU_USUARIO/lab-gitleaks:latest
 tags: [secrets, gitleaks, git, ci-cd, supply-chain]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: []
 
 tasks:

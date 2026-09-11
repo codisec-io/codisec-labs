@@ -1,0 +1,38 @@
+"""
+REFERÊNCIA — não é copiado pelo container em nenhum momento.
+Mostra a correção esperada da task 3 do lab.yaml, pra quem for validar
+manualmente que o ambiente está calibrado certo antes de publicar a imagem.
+"""
+from flask import Flask, jsonify, abort
+
+app = Flask(__name__)
+
+USERS = {
+    1: {"id": 1, "name": "Alice", "email": "alice@ex.com", "ssn_last4": "1234"},
+    2: {"id": 2, "name": "Bob", "email": "user2@ex.com", "ssn_last4": "4821"},
+    3: {"id": 3, "name": "Carol", "email": "carol@ex.com", "ssn_last4": "9087"},
+}
+
+
+def current_user_id():
+    return 1
+
+
+@app.route("/api/users/<int:user_id>/profile")
+def get_profile(user_id):
+    # CORRIGIDO: checagem de autorização antes de retornar o recurso.
+    if user_id != current_user_id():
+        abort(403)
+    user = USERS.get(user_id)
+    if not user:
+        abort(404)
+    return jsonify(user)
+
+
+@app.route("/healthz")
+def healthz():
+    return jsonify({"status": "ok"})
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)

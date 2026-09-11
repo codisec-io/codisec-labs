@@ -10,7 +10,7 @@ description: >
 image: ghcr.io/codisec/lab-semgrep-python:latest
 tags: [sast, semgrep, sql-injection, code-review]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: []
 
 tasks:

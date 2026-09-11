@@ -9,7 +9,7 @@ description: >
 image: ghcr.io/SEU_USUARIO/lab-terraform-tfsec:latest
 tags: [terraform, iac, tfsec, aws, sast]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: []
 
 tasks:

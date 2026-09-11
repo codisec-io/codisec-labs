@@ -7,10 +7,10 @@ description: >
   Explore uma API Flask vulnerável a IDOR (Insecure Direct Object Reference,
   OWASP Top 10 - A01 Broken Access Control), confirme a exploração e depois
   aplique a correção.
-image: ghcr.io/SEU_USUARIO/lab-flask-idor:latest
+image: ghcr.io/codisec-io/lab-flask-idor:latest
 tags: [idor, api, owasp-top10, flask, broken-access-control]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: [5000]
 
 tasks:

@@ -10,7 +10,7 @@ description: >
 image: ghcr.io/codisec/lab-flask-xss:latest
 tags: [xss, owasp-top10, injection, flask]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: [5000]
 
 tasks:

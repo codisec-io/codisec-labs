@@ -10,7 +10,7 @@ description: >
 image: ghcr.io/codisec/lab-act-cicd:latest
 tags: [github-actions, ci-cd, act, pipeline]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: []
 
 tasks:

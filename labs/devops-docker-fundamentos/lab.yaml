@@ -14,7 +14,7 @@ image: docker:24-dind
 requires_privileged: true
 tags: [docker, fundamentos, containers]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: []
 
 tasks:

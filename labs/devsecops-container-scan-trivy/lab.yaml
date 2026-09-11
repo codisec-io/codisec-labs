@@ -10,7 +10,7 @@ description: >
 image: ghcr.io/codisec/lab-trivy-scan:latest
 tags: [trivy, container-security, cve, supply-chain]
 maintainers:
-  - "Fernando <seu-email@exemplo.com>"
+  - "Fernando <labs@codisec.com.br>"
 exposed_ports: []
 
 tasks:
