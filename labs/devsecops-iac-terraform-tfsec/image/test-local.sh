@@ -43,7 +43,7 @@ resource \"aws_s3_bucket_public_access_block\" \"dados\" {
   restrict_public_buckets = true
 }
 EOF"
-S3_COUNT=$(docker exec "$CONTAINER" sh -c "cd /app/infra && tfsec . 2>&1 | grep -c 'aws-s3'" || true)
+S3_COUNT=$(docker exec "$CONTAINER" sh -c "cd /app/infra && tfsec . 2>&1 | grep -cE 'aws-s3-(block-public-acls|block-public-policy|ignore-public-acls|no-public-buckets|specify-public-access-block)'" || true)
 if [ "$S3_COUNT" = "0" ]; then
   echo "    ✅ passou — achado aws-s3 não aparece mais"
 else

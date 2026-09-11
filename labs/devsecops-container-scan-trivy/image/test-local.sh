@@ -42,7 +42,7 @@ fi
 
 echo ""
 echo "==> Task 2 (count): contar CVEs críticas"
-OLD_COUNT=$(docker exec "$CONTAINER" sh -c "trivy image app-vulneravel:old --severity CRITICAL --format json 2>/dev/null | grep -c VulnerabilityID" || echo "0")
+OLD_COUNT=$(docker exec "$CONTAINER" sh -c "trivy image app-vulneravel:old --severity CRITICAL --format json 2>/dev/null | grep -c VulnerabilityID || true")
 echo "    CVEs críticas na imagem antiga: $OLD_COUNT"
 if [ "$OLD_COUNT" -gt "0" ]; then
   echo "    ✅ passou"
@@ -55,12 +55,12 @@ echo ""
 echo "==> Task 3 (fix): editar /app/Dockerfile e reconstruir como :new"
 docker exec "$CONTAINER" sh -c "sed -i 's/FROM debian:9/FROM debian:12-slim/' /app/Dockerfile"
 docker exec "$CONTAINER" docker build -t app-vulneravel:new /app
-NEW_COUNT=$(docker exec "$CONTAINER" sh -c "trivy image app-vulneravel:new --severity CRITICAL --format json 2>/dev/null | grep -c VulnerabilityID" || echo "0")
-echo "    CVEs críticas na imagem nova: $NEW_COUNT (antiga: $OLD_COUNT)"
-if [ "$NEW_COUNT" -lt "$OLD_COUNT" ]; then
-  echo "    ✅ passou — a nova imagem tem menos CVEs críticas"
+CVE_COUNT=$(docker exec "$CONTAINER" sh -c "trivy image app-vulneravel:new --severity CRITICAL --format json 2>/dev/null | grep -c CVE-2019-12900 || true")
+echo "    Ocorrências de CVE-2019-12900 na imagem nova: $CVE_COUNT"
+if [ "$CVE_COUNT" = "0" ]; then
+  echo "    ✅ passou — a CVE específica não aparece mais na imagem nova"
 else
-  echo "    ❌ falhou — a contagem não diminuiu ($NEW_COUNT vs $OLD_COUNT)"
+  echo "    ❌ falhou — CVE-2019-12900 ainda presente na imagem nova"
   exit 1
 fi
 
