@@ -7,7 +7,7 @@ description: >
   Um campo de busca reflete o termo digitado direto na página, sem
   sanitização. Explore o XSS refletido (OWASP Top 10 - A03 Injection) e
   corrija com escaping de saída.
-image: ghcr.io/codisec/lab-flask-xss:latest
+image: ghcr.io/codisec-io/lab-flask-xss:latest
 tags: [xss, owasp-top10, injection, flask]
 maintainers:
   - "Fernando <labs@codisec.com.br>"

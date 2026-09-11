@@ -7,7 +7,7 @@ description: >
   Um repositório Python com um SQL Injection e um uso perigoso de
   eval() escondidos no código. Rode semgrep, entenda os achados e
   corrija sem quebrar a aplicação.
-image: ghcr.io/codisec/lab-semgrep-python:latest
+image: ghcr.io/codisec-io/lab-semgrep-python:latest
 tags: [sast, semgrep, sql-injection, code-review]
 maintainers:
   - "Fernando <labs@codisec.com.br>"

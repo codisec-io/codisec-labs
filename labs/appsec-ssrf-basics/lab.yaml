@@ -8,7 +8,7 @@ description: >
   servidor para a URL que o usuário informa. Explore como isso permite
   acessar metadados de nuvem e serviços internos, depois corrija com
   uma allowlist.
-image: ghcr.io/SEU_USUARIO/lab-ssrf-preview:latest
+image: ghcr.io/codisec-io/lab-ssrf-preview:latest
 required_capabilities: ["NET_ADMIN"]
 tags: [ssrf, owasp-top10, cloud-metadata, network-security]
 maintainers:

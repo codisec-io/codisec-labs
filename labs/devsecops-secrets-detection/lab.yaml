@@ -8,7 +8,7 @@ description: >
   commitadas por engano, inclusive no histórico. Use gitleaks para
   encontrar, remova do código e entenda por que remover do commit atual
   não basta.
-image: ghcr.io/SEU_USUARIO/lab-gitleaks:latest
+image: ghcr.io/codisec-io/lab-gitleaks:latest
 tags: [secrets, gitleaks, git, ci-cd, supply-chain]
 maintainers:
   - "Fernando <labs@codisec.com.br>"

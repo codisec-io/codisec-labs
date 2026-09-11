@@ -6,7 +6,7 @@ duration: 45m
 description: >
   Um projeto Terraform com um bucket S3 público e um Security Group aberto
   para o mundo (0.0.0.0/0). Rode tfsec, entenda os achados e corrija o código.
-image: ghcr.io/SEU_USUARIO/lab-terraform-tfsec:latest
+image: ghcr.io/codisec-io/lab-terraform-tfsec:latest
 tags: [terraform, iac, tfsec, aws, sast]
 maintainers:
   - "Fernando <labs@codisec.com.br>"

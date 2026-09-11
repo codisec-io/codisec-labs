@@ -10,7 +10,7 @@ description: >
   privilegiado (Docker-in-Docker isolado dentro do próprio container do
   lab — ver docs/SECURITY.md) porque `act` executa os jobs do workflow
   como containers Docker de verdade.
-image: ghcr.io/codisec/lab-act-cicd:latest
+image: ghcr.io/codisec-io/lab-act-cicd:latest
 requires_privileged: true
 tags: [github-actions, ci-cd, act, pipeline]
 maintainers:

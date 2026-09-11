@@ -7,7 +7,7 @@ description: >
   Escreva seu primeiro playbook Ansible: instale um pacote, garanta que
   um serviço está rodando e crie um arquivo de configuração — tudo de
   forma idempotente.
-image: ghcr.io/codisec/lab-ansible-fundamentos:latest
+image: ghcr.io/codisec-io/lab-ansible-fundamentos:latest
 tags: [ansible, iac, configuration-management, fundamentos]
 maintainers:
   - "Fernando <labs@codisec.com.br>"

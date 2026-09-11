@@ -10,7 +10,7 @@ description: >
   modo privilegiado (Docker-in-Docker isolado dentro do próprio
   container do lab — ver docs/SECURITY.md) porque a task de correção
   builda uma nova imagem Docker de verdade.
-image: ghcr.io/codisec/lab-trivy-scan:latest
+image: ghcr.io/codisec-io/lab-trivy-scan:latest
 requires_privileged: true
 tags: [trivy, container-security, cve, supply-chain]
 maintainers:

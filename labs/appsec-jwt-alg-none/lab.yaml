@@ -7,7 +7,7 @@ description: >
   Uma API aceita JWT sem validar explicitamente o algoritmo de
   assinatura. Explore o ataque clássico alg=none (forjar um token sem
   assinatura válida) e corrija fixando o algoritmo esperado.
-image: ghcr.io/codisec/lab-flask-jwt-alg-none:latest
+image: ghcr.io/codisec-io/lab-jwt-alg-none:latest
 tags: [jwt, authentication, broken-auth, api]
 maintainers:
   - "Fernando <labs@codisec.com.br>"
