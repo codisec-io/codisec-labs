@@ -1,0 +1,5 @@
+# Este é o Dockerfile que o USUÁRIO do lab vai inspecionar, escanear e
+# corrigir (trocar a imagem base). Debian 9 (stretch) está EOL há anos,
+# sem patches de segurança — cheio de CVEs conhecidas de propósito.
+FROM debian:9
+CMD ["sleep", "infinity"]
