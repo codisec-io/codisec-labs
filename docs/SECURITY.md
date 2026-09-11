@@ -126,7 +126,40 @@ lab ensina (build, run, volumes) isso não é perceptível.
   confiar ou não num lab assim começa na hora de escolher rodá-lo, não
   só na hora de confirmar no terminal.
 
-## 5. Superfície pública
+## 5. Labs que exigem capabilities específicas (não privilégio total)
+
+Nem todo lab que precisa de uma permissão especial precisa de
+`--privileged` completo. `appsec-ssrf-basics`, por exemplo, adiciona o
+IP `169.254.169.254` na interface loopback via `ip addr add` pra
+simular o serviço de metadados de nuvem — isso exige `CAP_NET_ADMIN`,
+mas nada além disso. Usar `--privileged` aqui seria desproporcional: o
+aviso de "acesso root nesta máquina" não seria verdade pra esse caso, e
+assustaria o usuário sem necessidade.
+
+**Como funciona na prática:**
+
+- `labs/schema.json` tem o campo opcional `required_capabilities`
+  (array de strings, default `[]`) — mapeado 1:1 pra `--cap-add` na
+  CLI. Só `labs/appsec-ssrf-basics/lab.yaml` declara
+  `required_capabilities: ["NET_ADMIN"]` hoje. Mesma regra de
+  `requires_privileged`: não expandir pra outro lab sem confirmar
+  antes que é um caso real.
+- Os dois campos não são cumulativos: se um lab tivesse os dois
+  declarados, `requires_privileged: true` prevaleceria (privilégio
+  total já inclui qualquer capability) e `--cap-add` não seria somado
+  separadamente — cenário hipotético, não é o caso de nenhum lab hoje.
+- A CLI (`cmd/start.go`) mostra um aviso antes de subir um lab com
+  `required_capabilities` preenchido, com confirmação `[y/N]` (mesma
+  flag `--yes` de `requires_privileged`) — mas com linguagem
+  deliberadamente mais branda: "permissão de rede", não "acesso root".
+- O site (`/labs/<id>`) mostra o mesmo aviso visualmente, com uma cor
+  diferente do aviso de modo privilegiado (o design system não tem um
+  tom de "alerta vermelho" — ver `site/src/styles/tokens.css` — então
+  usamos o ciano do resto do site em vez de inventar uma cor fora da
+  paleta) pra reforçar que é uma permissão pontual, não privilégio
+  total.
+
+## 6. Superfície pública
 
 Recapitulando o que já está em `docs/ARCHITECTURE.md`: o único artefato
 nosso acessível pela internet é o site estático, o catálogo, os

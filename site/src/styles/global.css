@@ -236,6 +236,17 @@ section { padding: 72px 0; border-top: 1px solid var(--hairline); }
   border: 1px solid var(--amber-dim); border-radius: 4px; padding: 10px 12px; background: rgba(232,163,61,.08);
 }
 .lab-warning code { overflow-wrap: break-word; word-break: break-word; }
+/* Aviso brando de capabilities específicas (required_capabilities) —
+   mesma caixa de .lab-warning, mas em ciano em vez de âmbar: o projeto
+   não tem um tom "vermelho" no design system (ver tokens.css), então
+   usamos o ciano — já a cor de ações/links neutros no resto do site —
+   pra marcar visualmente que isso é mais brando que modo privilegiado,
+   não pra inventar uma cor de alerta fora da paleta. */
+.lab-notice {
+  margin-top: 16px; font-size: 13px; color: var(--cyan);
+  border: 1px solid var(--cyan); border-radius: 4px; padding: 10px 12px; background: rgba(79,195,217,.08);
+}
+.lab-notice code { overflow-wrap: break-word; word-break: break-word; }
 .cmd-block {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   background: var(--surface); border: 1px solid var(--hairline); border-radius: 4px;

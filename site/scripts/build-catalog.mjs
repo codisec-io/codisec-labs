@@ -112,6 +112,7 @@ function catalogEntry(lab) {
     image: lab.image,
     image_published: isImagePublished(lab.image),
     requires_privileged: lab.requires_privileged ?? false,
+    required_capabilities: lab.required_capabilities ?? [],
     task_count: lab.tasks.length,
     maintainers: lab.maintainers ?? [],
   };
@@ -146,6 +147,7 @@ function main() {
       ...lab,
       image_published: isImagePublished(lab.image),
       requires_privileged: lab.requires_privileged ?? false,
+      required_capabilities: lab.required_capabilities ?? [],
     };
     writeFileSync(
       join(LABS_JSON_DIR, `${lab.id}.json`),

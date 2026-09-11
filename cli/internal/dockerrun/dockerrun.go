@@ -132,6 +132,15 @@ func (r *Runner) startWithCommand(ctx context.Context, lab labspec.Lab, cmdOverr
 
 	if lab.RequiresPrivileged {
 		fmt.Fprintf(os.Stderr, "Subindo em modo privilegiado (requires_privileged: true no lab.yaml)...\n")
+	} else if len(lab.RequiredCapabilities) > 0 {
+		fmt.Fprintf(os.Stderr, "Subindo com capabilities extras (%s)...\n", strings.Join(lab.RequiredCapabilities, ", "))
+	}
+
+	// Privilégio total já inclui todas as capabilities — não precisa
+	// somar --cap-add separadamente quando requires_privileged é true.
+	var capAdd []string
+	if !lab.RequiresPrivileged {
+		capAdd = lab.RequiredCapabilities
 	}
 
 	resp, err := r.cli.ContainerCreate(ctx,
@@ -150,6 +159,11 @@ func (r *Runner) startWithCommand(ctx context.Context, lab labspec.Lab, cmdOverr
 			// modo privilegiado": a confirmação interativa acontece
 			// antes disso, em cmd/start.go, nunca aqui em silêncio.
 			Privileged: lab.RequiresPrivileged,
+			// Capabilities específicas (ex: NET_ADMIN) — mais restrito
+			// que --privileged. Mesma regra de confirmação prévia em
+			// cmd/start.go. Ver docs/SECURITY.md, "Labs que exigem
+			// capabilities específicas".
+			CapAdd: capAdd,
 		},
 		&network.NetworkingConfig{},
 		nil,

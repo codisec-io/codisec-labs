@@ -58,6 +58,17 @@ const difficultyLabel: Record<string, string> = {
           </div>
         )}
 
+        {!data.requires_privileged && data.required_capabilities.length > 0 && (
+          <div class="lab-notice">
+            ℹ️ Este lab pede a permissão de rede{' '}
+            <strong>{data.required_capabilities.join(', ')}</strong>{' '}
+            — mais restrito que modo privilegiado, mas maior que o
+            padrão de um container comum. A CLI vai pedir confirmação
+            antes de iniciar (ver "Labs que exigem capabilities
+            específicas" em docs/SECURITY.md no repositório).
+          </div>
+        )}
+
         <div style="margin-top:24px;">
           <p style="font-size:13px; color:var(--muted); margin-bottom:4px;">Rode este lab localmente:</p>
           <CopyButton command={`codisec lab start ${data.id}`} />

@@ -42,3 +42,35 @@ func TestConfirmPrivileged(t *testing.T) {
 		})
 	}
 }
+
+func TestConfirmCapabilities(t *testing.T) {
+	cases := []struct {
+		input string
+		want  bool
+	}{
+		{"y\n", true},
+		{"yes\n", true},
+		{"n\n", false},
+		{"\n", false}, // só Enter — padrão é negar
+		{"", false},   // EOF sem digitar nada — padrão é negar
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.input, func(t *testing.T) {
+			var out bytes.Buffer
+			got, err := confirmCapabilities([]string{"NET_ADMIN"}, strings.NewReader(tc.input), &out)
+			if err != nil {
+				t.Fatalf("confirmCapabilities(%q): %v", tc.input, err)
+			}
+			if got != tc.want {
+				t.Errorf("confirmCapabilities(%q) = %v, queria %v", tc.input, got, tc.want)
+			}
+			if !strings.Contains(out.String(), "NET_ADMIN") {
+				t.Error("aviso não menciona a capability pedida")
+			}
+			if strings.Contains(out.String(), "acesso privilegiado") {
+				t.Error("aviso de capabilities não deveria usar a mesma linguagem de requires_privileged")
+			}
+		})
+	}
+}

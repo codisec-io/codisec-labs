@@ -7,18 +7,19 @@ package labspec
 // CatalogEntry é uma entrada do índice em /catalog.json — leve, sem as
 // tasks completas (essas só existem no /labs/<id>.json de cada lab).
 type CatalogEntry struct {
-	ID                 string   `json:"id"`
-	Title              string   `json:"title"`
-	Category           string   `json:"category"`
-	Difficulty         string   `json:"difficulty"`
-	Duration           string   `json:"duration"`
-	Description        string   `json:"description"`
-	Tags               []string `json:"tags"`
-	Image              string   `json:"image"`
-	ImagePublished     bool     `json:"image_published"`
-	RequiresPrivileged bool     `json:"requires_privileged"`
-	TaskCount          int      `json:"task_count"`
-	Maintainers        []string `json:"maintainers"`
+	ID                   string   `json:"id"`
+	Title                string   `json:"title"`
+	Category             string   `json:"category"`
+	Difficulty           string   `json:"difficulty"`
+	Duration             string   `json:"duration"`
+	Description          string   `json:"description"`
+	Tags                 []string `json:"tags"`
+	Image                string   `json:"image"`
+	ImagePublished       bool     `json:"image_published"`
+	RequiresPrivileged   bool     `json:"requires_privileged"`
+	RequiredCapabilities []string `json:"required_capabilities"`
+	TaskCount            int      `json:"task_count"`
+	Maintainers          []string `json:"maintainers"`
 }
 
 // Catalog é o conteúdo de /catalog.json.
@@ -56,20 +57,21 @@ type Recovery struct {
 // Lab é o conteúdo completo de /labs/<id>.json — equivalente ao
 // lab.yaml original, mas em JSON, sem precisar de parser YAML na CLI.
 type Lab struct {
-	ID                 string   `json:"id"`
-	Title              string   `json:"title"`
-	Category           string   `json:"category"`
-	Difficulty         string   `json:"difficulty"`
-	Duration           string   `json:"duration"`
-	Description        string   `json:"description"`
-	Image              string   `json:"image"`
-	ImagePublished     bool     `json:"image_published"`
-	RequiresPrivileged bool     `json:"requires_privileged"`
-	Tags               []string `json:"tags"`
-	Maintainers        []string `json:"maintainers"`
-	ExposedPorts       []int    `json:"exposed_ports"`
-	Tasks              []Task   `json:"tasks"`
-	Recovery           Recovery `json:"recovery"`
+	ID                   string   `json:"id"`
+	Title                string   `json:"title"`
+	Category             string   `json:"category"`
+	Difficulty           string   `json:"difficulty"`
+	Duration             string   `json:"duration"`
+	Description          string   `json:"description"`
+	Image                string   `json:"image"`
+	ImagePublished       bool     `json:"image_published"`
+	RequiresPrivileged   bool     `json:"requires_privileged"`
+	RequiredCapabilities []string `json:"required_capabilities"`
+	Tags                 []string `json:"tags"`
+	Maintainers          []string `json:"maintainers"`
+	ExposedPorts         []int    `json:"exposed_ports"`
+	Tasks                []Task   `json:"tasks"`
+	Recovery             Recovery `json:"recovery"`
 }
 
 // FindTask procura uma task pelo id dentro do lab.

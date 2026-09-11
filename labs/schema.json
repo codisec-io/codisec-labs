@@ -20,6 +20,12 @@
       "default": false,
       "description": "Se true, o lab precisa de acesso privilegiado ao host (--privileged) para funcionar (ex: labs que rodam Docker-in-Docker). A CLI avisa e exige confirmação explícita (ou a flag --yes) antes de iniciar um lab assim — nunca silenciosamente. Ver docs/SECURITY.md, seção 'Labs que exigem modo privilegiado'."
     },
+    "required_capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Capabilities Linux específicas exigidas em runtime (ex: ['NET_ADMIN']), mapeadas para --cap-add na CLI. Mais restrito que requires_privileged — use isso quando o lab precisar de uma permissão específica, não de privilégio total. Se o lab também declarar requires_privileged: true, este campo é redundante (privilégio total já inclui todas as capabilities) e o aviso de requires_privileged prevalece."
+    },
     "tags": { "type": "array", "items": { "type": "string" } },
     "maintainers": { "type": "array", "items": { "type": "string" } },
     "exposed_ports": { "type": "array", "items": { "type": "integer" } },
