@@ -58,6 +58,15 @@ nav a:hover { color: var(--text); }
   border-radius: 4px; font-weight: 600; font-size: 13px;
 }
 .nav-cta:hover { color: var(--ink); }
+@media (max-width: 620px) {
+  /* Achado na auditoria de responsividade (360/390px): logo + 4 itens
+     de nav com gap:28px não cabem numa linha só e ficavam sobrepostos
+     (sem flex-wrap, o flex encolhia os itens uns por cima dos outros
+     em vez de quebrar linha). Empilha em duas linhas: logo em cima,
+     nav (com gap menor, ela mesma quebrável) embaixo. */
+  header { flex-wrap: wrap; row-gap: 12px; padding: 16px 0; }
+  nav { flex-wrap: wrap; gap: 10px 18px; font-size: 13px; width: 100%; }
+}
 
 /* Hero */
 .hero {
@@ -205,6 +214,14 @@ section { padding: 72px 0; border-top: 1px solid var(--hairline); }
 /* Página de lab individual */
 .lab-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 40px; align-items: start; }
 @media (max-width: 860px) { .lab-layout { grid-template-columns: 1fr; } }
+/* Sem isso, um único token longo sem espaço (URL, path de imagem,
+   comando) dentro de qualquer coluna força a trilha do grid a crescer
+   além do viewport — grid/flex items têm min-width:auto por padrão,
+   não encolhem abaixo do conteúdo intrínseco a menos que a gente
+   mande explicitamente (achado na auditoria de responsividade em
+   360/390px: .lab-layout media 423px de largura numa viewport de
+   360px por causa exatamente disso). */
+.lab-layout > * { min-width: 0; }
 .lab-sidebar { position: sticky; top: 24px; }
 .lab-badge {
   display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
@@ -218,12 +235,16 @@ section { padding: 72px 0; border-top: 1px solid var(--hairline); }
   margin-top: 16px; font-size: 13px; color: var(--diff-intermediate);
   border: 1px solid var(--amber-dim); border-radius: 4px; padding: 10px 12px; background: rgba(232,163,61,.08);
 }
+.lab-warning code { overflow-wrap: break-word; word-break: break-word; }
 .cmd-block {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   background: var(--surface); border: 1px solid var(--hairline); border-radius: 4px;
   padding: 12px 14px; margin-top: 8px;
 }
-.cmd-block code { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--cyan); overflow-x: auto; }
+.cmd-block code {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--cyan);
+  overflow-x: auto; min-width: 0; overflow-wrap: break-word; word-break: break-word;
+}
 .copy-btn {
   background: none; border: 1px solid var(--hairline); color: var(--muted);
   border-radius: 4px; padding: 5px 10px; font-size: 12px; cursor: pointer; white-space: nowrap;
@@ -243,6 +264,7 @@ section { padding: 72px 0; border-top: 1px solid var(--hairline); }
 .task-card ol li code {
   background: var(--surface-2); border-radius: 3px; padding: 1px 5px;
   font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--cyan);
+  overflow-wrap: break-word; word-break: break-word;
 }
 .validation-hint {
   font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--hairline);
@@ -305,6 +327,7 @@ section { padding: 72px 0; border-top: 1px solid var(--hairline); }
 .prose code {
   background: var(--surface-2); border-radius: 3px; padding: 1px 6px;
   font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--cyan);
+  overflow-wrap: break-word; word-break: break-word;
 }
 .prose pre {
   background: var(--surface); border: 1px solid var(--hairline); border-radius: 6px;
