@@ -1,9 +1,16 @@
 ---
-// Digitação do terminal do hero — porta o efeito de site-design/index.html.
-// Mostra o comando real do lab appsec-idor-api (codisec lab start
-// appsec-idor-api) e a saída que ele produz quando a imagem publicada
-// em ghcr.io/codisec/lab-flask-idor existir (ainda não existe — ver
-// image_published em catalog.json).
+// Digitação do terminal do hero. Mostra o comando real do lab
+// appsec-idor-api (codisec lab start appsec-idor-api) e a saída que ele
+// produz quando a imagem publicada em ghcr.io/codisec/lab-flask-idor
+// existir (ainda não existe — ver image_published em catalog.json).
+//
+// Efeito de máquina de escrever: linhas de comando (o que "alguém"
+// digita) aparecem caractere a caractere com jitter; linhas de saída
+// do sistema aparecem prontas (é o próprio programa respondendo, não
+// alguém digitando) com um fade rápido — a diferença de ritmo é o que
+// deixa as duas coisas visualmente distintas. Dispara uma vez quando a
+// seção entra na viewport (IntersectionObserver, desconectado depois
+// do primeiro disparo) — não repete em scroll, não faz loop.
 ---
 <div class="terminal">
   <div class="terminal-bar"><span></span><span></span><span></span></div>
@@ -11,35 +18,132 @@
 </div>
 
 <script>
-  const lines = [
-    '<span class="prompt">$</span> codisec lab start appsec-idor-api',
-    '<span class="dim">Baixando ghcr.io/codisec/lab-flask-idor:latest...</span>',
-    '<span class="dim">Subindo container local...</span>',
-    '<span class="ok">✓ Lab pronto. Terminal conectado.</span>',
-    '',
-    '<span class="prompt">$</span> curl localhost:5000/api/users/2/profile',
-    '<span class="dim">{"email":"user2@ex.com","ssn_last4":"4821"}</span>',
+  type Segment =
+    | { type: 'command'; text: string }
+    | { type: 'output'; text: string; style: 'dim' | 'ok' }
+    | { type: 'blank' };
+
+  const sequence: Segment[] = [
+    { type: 'command', text: 'codisec lab start appsec-idor-api' },
+    { type: 'output', style: 'dim', text: 'Baixando ghcr.io/codisec/lab-flask-idor:latest...' },
+    { type: 'output', style: 'dim', text: 'Subindo container local...' },
+    { type: 'output', style: 'ok', text: '✓ Lab pronto. Terminal conectado.' },
+    { type: 'blank' },
+    { type: 'command', text: 'curl localhost:5000/api/users/2/profile' },
+    { type: 'output', style: 'dim', text: '{"email":"user2@ex.com","ssn_last4":"4821"}' },
   ];
 
-  function startTyping() {
-    const el = document.getElementById('term');
-    if (!el) return;
-    let html = '';
-    let li = 0;
+  const CHAR_DELAY_MIN = 20;
+  const CHAR_DELAY_JITTER = 20; // 20-40ms por caractere
+  const OUTPUT_PAUSE = 220; // pausa antes de "imprimir" uma linha de saída
+  const AFTER_COMMAND_PAUSE = 260; // pausa depois de terminar de digitar um comando
 
-    function typeNextLine() {
-      if (li >= lines.length) {
-        el!.innerHTML = html + '<span id="cursor"></span>';
-        return;
-      }
-      html += (li > 0 ? '<br>' : '') + lines[li];
-      el!.innerHTML = html + '<span id="cursor"></span>';
-      li++;
-      setTimeout(typeNextLine, 480);
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const prefersReducedMotion = () =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+  async function typeCommand(container: HTMLElement, cursor: HTMLElement, text: string) {
+    const line = document.createElement('div');
+    const prompt = document.createElement('span');
+    prompt.className = 'prompt';
+    prompt.textContent = '$ ';
+    const typed = document.createElement('span');
+    line.append(prompt, typed);
+    container.appendChild(line);
+    line.appendChild(cursor);
+
+    for (let i = 0; i < text.length; i++) {
+      typed.textContent += text[i];
+      await sleep(CHAR_DELAY_MIN + Math.random() * CHAR_DELAY_JITTER);
     }
-    setTimeout(typeNextLine, 500);
+    await sleep(AFTER_COMMAND_PAUSE);
   }
 
-  startTyping();
-  document.addEventListener('astro:page-load', startTyping);
+  async function printOutput(container: HTMLElement, cursor: HTMLElement, text: string, style: 'dim' | 'ok') {
+    await sleep(OUTPUT_PAUSE);
+    const line = document.createElement('div');
+    line.className = `${style} line-output`;
+    line.textContent = text;
+    container.appendChild(line);
+    container.appendChild(cursor);
+  }
+
+  function printInstant(container: HTMLElement, cursor: HTMLElement) {
+    // Caminho sem animação pra quem prefere menos movimento na tela —
+    // mostra o resultado final direto, sem digitação nem fades.
+    for (const seg of sequence) {
+      if (seg.type === 'blank') {
+        container.appendChild(document.createElement('div'));
+        continue;
+      }
+      const line = document.createElement('div');
+      if (seg.type === 'command') {
+        const prompt = document.createElement('span');
+        prompt.className = 'prompt';
+        prompt.textContent = '$ ';
+        const typed = document.createElement('span');
+        typed.textContent = seg.text;
+        line.append(prompt, typed);
+      } else {
+        line.className = seg.style;
+        line.textContent = seg.text;
+      }
+      container.appendChild(line);
+    }
+    container.appendChild(cursor);
+  }
+
+  async function runSequence(container: HTMLElement, cursor: HTMLElement) {
+    for (const seg of sequence) {
+      if (seg.type === 'blank') {
+        container.appendChild(document.createElement('div'));
+        continue;
+      }
+      if (seg.type === 'command') {
+        await typeCommand(container, cursor, seg.text);
+      } else {
+        await printOutput(container, cursor, seg.text, seg.style);
+      }
+    }
+  }
+
+  function setupTerminal() {
+    const term = document.getElementById('term');
+    const terminalEl = term?.closest('.terminal');
+    if (!term || !terminalEl) return;
+
+    // Evita re-inicializar (ex: se astro:page-load disparar de novo no
+    // mesmo DOM) e disparar a animação duas vezes por cima dela mesma.
+    if (term.dataset.typingInit === '1') return;
+    term.dataset.typingInit = '1';
+
+    const cursor = document.createElement('span');
+    cursor.id = 'cursor';
+
+    const start = () => {
+      if (term.dataset.typingStarted === '1') return;
+      term.dataset.typingStarted = '1';
+      if (prefersReducedMotion()) {
+        printInstant(term, cursor);
+      } else {
+        runSequence(term, cursor);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            start();
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(terminalEl);
+  }
+
+  setupTerminal();
+  document.addEventListener('astro:page-load', setupTerminal);
 </script>

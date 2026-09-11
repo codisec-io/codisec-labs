@@ -94,7 +94,25 @@ nav a:hover { color: var(--text); }
 .terminal-body .prompt { color: var(--cyan); }
 .terminal-body .ok { color: var(--diff-beginner); }
 .terminal-body .dim { color: var(--muted); }
-#cursor { display: inline-block; width: 7px; height: 14px; background: var(--amber); vertical-align: -2px; }
+#cursor {
+  display: inline-block; width: 7px; height: 14px; background: var(--amber); vertical-align: -2px;
+  animation: cursor-blink 1s step-end infinite;
+}
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+/* Linha de saída do sistema "aparecendo pronta" — contraste com a
+   digitação caractere-a-caractere das linhas de comando. */
+.line-output { animation: line-output-in 160ms ease-out; }
+@keyframes line-output-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #cursor { animation: none; }
+  .line-output { animation: none; }
+}
 
 /* Seções */
 section { padding: 72px 0; border-top: 1px solid var(--hairline); }
