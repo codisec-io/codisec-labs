@@ -6,8 +6,12 @@ duration: 35m
 description: >
   Uma imagem Docker baseada numa versão antiga do Debian, com pacotes
   desatualizados carregando CVEs conhecidas. Rode trivy, entenda a
-  severidade dos achados e corrija atualizando a imagem base.
+  severidade dos achados e corrija atualizando a imagem base. Roda em
+  modo privilegiado (Docker-in-Docker isolado dentro do próprio
+  container do lab — ver docs/SECURITY.md) porque a task de correção
+  builda uma nova imagem Docker de verdade.
 image: ghcr.io/codisec/lab-trivy-scan:latest
+requires_privileged: true
 tags: [trivy, container-security, cve, supply-chain]
 maintainers:
   - "Fernando <labs@codisec.com.br>"
@@ -53,16 +57,24 @@ tasks:
       imagem base pra uma versão mais recente e mantida (ou trocar por
       uma distro minimalista tipo Alpine/Distroless, que tem MUITO menos
       pacotes e portanto muito menos superfície de CVE).
+
+      Contraintuitivo: distros EOL (fim de vida, como o `debian:9` desta
+      imagem) às vezes mostram MENOS CVEs que uma distro atualizada — não
+      porque são mais seguras, mas porque ninguém mais rastreia
+      vulnerabilidades novas nelas. O próprio trivy avisa isso ("This OS
+      version is no longer supported... vulnerability detection may be
+      insufficient"). Por isso comparar contagem total de CVEs entre
+      versão antiga e nova não é uma métrica confiável aqui.
     steps:
       - "Edite `/app/Dockerfile` com `vi /app/Dockerfile`."
       - "Troque a primeira linha `FROM debian:9` por `FROM debian:12-slim` (ou `FROM python:3.12-slim` se a imagem for baseada em Python)."
       - "Reconstrua: `docker build -t app-vulneravel:new /app`"
       - "Rode o scan na nova imagem: `trivy image app-vulneravel:new --severity CRITICAL --format json | grep -c VulnerabilityID`"
     validation:
-      command: "test $(trivy image app-vulneravel:new --severity CRITICAL --format json | grep -c VulnerabilityID) -lt $(trivy image app-vulneravel:old --severity CRITICAL --format json | grep -c VulnerabilityID)"
-      expected_exit_code: 0
-      success_message: "A nova imagem tem significativamente menos CVEs críticas que a antiga."
-      error_message: "A contagem não diminuiu. Confira se o Dockerfile foi editado e a imagem reconstruída com a tag :new."
+      command: "trivy image app-vulneravel:new --severity CRITICAL --format json 2>/dev/null | grep -c CVE-2019-12900"
+      expected_output_contains: "0"
+      success_message: "A CVE-2019-12900 (bzip2, conhecida na base antiga) não aparece mais na imagem atualizada."
+      error_message: "A CVE-2019-12900 ainda aparece. Confira se o Dockerfile foi editado e a imagem reconstruída com a tag :new."
 
 recovery:
   reset_command: "cp /app/Dockerfile.original /app/Dockerfile"

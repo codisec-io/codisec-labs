@@ -103,10 +103,16 @@ lab ensina (build, run, volumes) isso não é perceptível.
 **Como funciona na prática:**
 
 - `labs/schema.json` tem o campo opcional `requires_privileged`
-  (default `false`). Só `labs/devops-docker-fundamentos/lab.yaml`
-  declara `requires_privileged: true` hoje — nenhum outro lab precisa
-  disso, e não deve ganhar esse campo "de graça" só porque é possível;
-  cada caso novo merece a mesma análise acima antes de marcar `true`.
+  (default `false`). Hoje três labs declaram `requires_privileged: true`,
+  cada um confirmado por teste real (não suposição) de que o container
+  precisa de Docker de verdade por dentro:
+  `labs/devops-docker-fundamentos/lab.yaml` (Docker-in-Docker pra
+  praticar build/run/volumes), `labs/devsecops-container-scan-trivy/lab.yaml`
+  (a task de correção builda uma nova imagem Docker) e
+  `labs/devops-cicd-local-com-act/lab.yaml` (`act` executa os jobs do
+  workflow como containers Docker). Nenhum outro lab precisa disso, e
+  não deve ganhar esse campo "de graça" só porque é possível — cada caso
+  novo merece a mesma análise acima antes de marcar `true`.
 - `site/scripts/build-catalog.mjs` propaga esse campo pro `catalog.json`
   e pro `labs/<id>.json` — é assim que tanto a CLI quanto o site sabem
   disso sem reimplementar a leitura do `lab.yaml`.

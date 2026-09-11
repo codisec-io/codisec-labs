@@ -6,8 +6,12 @@ duration: 40m
 description: >
   Um repositório com um workflow do GitHub Actions quebrado (falha nos
   testes). Use `act` pra rodar o pipeline localmente, sem precisar de
-  push nem de esperar o CI da nuvem, debugue e corrija.
+  push nem de esperar o CI da nuvem, debugue e corrija. Roda em modo
+  privilegiado (Docker-in-Docker isolado dentro do próprio container do
+  lab — ver docs/SECURITY.md) porque `act` executa os jobs do workflow
+  como containers Docker de verdade.
 image: ghcr.io/codisec/lab-act-cicd:latest
+requires_privileged: true
 tags: [github-actions, ci-cd, act, pipeline]
 maintainers:
   - "Fernando <labs@codisec.com.br>"

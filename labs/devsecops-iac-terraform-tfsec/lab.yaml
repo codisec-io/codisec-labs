@@ -41,7 +41,7 @@ tasks:
       - "Adicione um recurso `aws_s3_bucket_public_access_block` referenciando o bucket, com todos os 4 campos (`block_public_acls`, `block_public_policy`, `ignore_public_acls`, `restrict_public_buckets`) como `true`."
       - "Rode `tfsec .` de novo pra confirmar que o achado sumiu."
     validation:
-      command: "cd /app/infra && tfsec . 2>&1 | grep -c 'aws-s3'"
+      command: "cd /app/infra && tfsec . 2>&1 | grep -cE 'aws-s3-(block-public-acls|block-public-policy|ignore-public-acls|no-public-buckets|specify-public-access-block)'"
       expected_output_contains: "0"
       success_message: "Bucket corrigido — o bloqueio de acesso público está aplicado."
       error_message: "O tfsec ainda está apontando o problema no S3. Revise o bloco aws_s3_bucket_public_access_block."
