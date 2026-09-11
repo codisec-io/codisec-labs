@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/codisec/codisec-labs/cli/internal/catalog"
+	"github.com/codisec-io/codisec-labs/cli/internal/catalog"
 )
 
 func newInfoCmd() *cobra.Command {

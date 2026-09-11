@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/codisec/codisec-labs/cli/internal/labspec"
+	"github.com/codisec-io/codisec-labs/cli/internal/labspec"
 )
 
 // ProductionBaseURL é a única origem que a CLI de fato usa em produção.

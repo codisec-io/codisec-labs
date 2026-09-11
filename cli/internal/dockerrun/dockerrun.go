@@ -23,7 +23,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"golang.org/x/term"
 
-	"github.com/codisec/codisec-labs/cli/internal/labspec"
+	"github.com/codisec-io/codisec-labs/cli/internal/labspec"
 )
 
 // LabLabelKey marca todo container criado pela CLI com o id do lab —

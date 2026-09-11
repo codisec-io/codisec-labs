@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/codisec/codisec-labs/cli/internal/labspec"
+	"github.com/codisec-io/codisec-labs/cli/internal/labspec"
 )
 
 func newTestRunner(t *testing.T) *Runner {

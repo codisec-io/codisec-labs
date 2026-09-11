@@ -9,7 +9,7 @@
 # $HOME/.local/bin por padrão.
 set -eu
 
-REPO="codisec/codisec-labs"
+REPO="codisec-io/codisec-labs"
 INSTALL_DIR="${CODISEC_INSTALL_DIR:-$HOME/.local/bin}"
 
 fail() {

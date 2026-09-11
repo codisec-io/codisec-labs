@@ -3,8 +3,8 @@ package cmd
 import (
 	"testing"
 
-	"github.com/codisec/codisec-labs/cli/internal/dockerrun"
-	"github.com/codisec/codisec-labs/cli/internal/labspec"
+	"github.com/codisec-io/codisec-labs/cli/internal/dockerrun"
+	"github.com/codisec-io/codisec-labs/cli/internal/labspec"
 )
 
 func intPtr(i int) *int { return &i }

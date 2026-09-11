@@ -28,16 +28,14 @@ próxima. Marque conforme for concluindo.
 - [ ] Confirmar que o Docker Desktop está instalado e rodando na sua
       máquina (necessário pra `cli/`, testado nesta sessão contra o
       Docker do ambiente de dev — confirme que está igual na sua)
-- [x] Remote no GitHub criado e conectado —
-      `github.com/Ferhummes84/codisec-labs` (conta pessoal, não a
-      organização `codisec` que `cli/go.mod`, `cli/.goreleaser.yml` e
-      os `install.sh`/`install.ps1` ainda assumem). **Pendente decidir:**
-      migrar pra uma org `codisec` depois, ou ajustar essas referências
-      pro nome real do repo agora — enquanto não for decidido,
-      `install.sh`/`install.ps1` e o release da CLI (`goreleaser`) vão
-      resolver a URL errada. Não mexi nisso nesta sessão por ser fora do
-      escopo pedido (correção do build da Cloudflare) — sinalizando pra
-      você decidir.
+- [x] Repositório transferido pra organização
+      `github.com/codisec-io/codisec-labs`. Todas as referências
+      (`cli/go.mod`, `cli/.goreleaser.yml`, `install.sh`/`install.ps1`,
+      `README.md`/`CONTRIBUTING.md`/`docs/*.md`) atualizadas de
+      `Ferhummes84`/`codisec` pra `codisec-io` nesta sessão — busca
+      global (`grep -rn "Ferhummes84"`) confirma zero referência
+      restante, e os testes da CLI (`go build`/`go vet`/`go test`)
+      passam depois da mudança.
 - [ ] Criar conta no Cloudflare Pages (se ainda não tiver) — o domínio
       `codisec.com.br` já está no Cloudflare, então é só conectar o
       projeto (ver `docs/DEPLOY.md`)

@@ -5,7 +5,7 @@
 // docs/ARCHITECTURE.md.
 package main
 
-import "github.com/codisec/codisec-labs/cli/cmd"
+import "github.com/codisec-io/codisec-labs/cli/cmd"
 
 func main() {
 	cmd.Execute()

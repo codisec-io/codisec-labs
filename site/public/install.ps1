@@ -8,7 +8,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$Repo = "codisec/codisec-labs"
+$Repo = "codisec-io/codisec-labs"
 $InstallDir = if ($env:CODISEC_INSTALL_DIR) { $env:CODISEC_INSTALL_DIR } else { Join-Path $env:USERPROFILE ".codisec\bin" }
 
 # A CLI só publica windows/amd64 por enquanto (ver cli/.goreleaser.yml).

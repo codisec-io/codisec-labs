@@ -35,7 +35,7 @@ Mitigações em vigor:
   GitHub Actions) — não existe chave privada armazenada como secret que,
   se vazada, permitiria assinar um binário malicioso.
 - Os instaladores resolvem a versão sempre pela API oficial de releases
-  do GitHub (`api.github.com/repos/codisec/codisec-labs/releases/latest`)
+  do GitHub (`api.github.com/repos/codisec-io/codisec-labs/releases/latest`)
   — nunca aceitam uma URL de download alternativa via flag ou variável
   de ambiente.
 

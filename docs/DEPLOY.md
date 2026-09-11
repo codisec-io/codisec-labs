@@ -12,7 +12,7 @@
 O domínio `codisec.com.br` já está no Cloudflare.
 
 1. Painel do Cloudflare → **Pages** → **Create a project** → conectar
-   o repositório GitHub (`codisec/codisec-labs`).
+   o repositório GitHub (`codisec-io/codisec-labs`).
 2. Configuração de build:
    - **Build command:**
      ```bash
@@ -77,12 +77,12 @@ pelo GoReleaser (`cli/.goreleaser.yml`).
    windows/amd64), gera `checksums.txt`, assina com `cosign` (keyless,
    via OIDC do GitHub Actions — não precisa gerenciar chave privada) e
    publica tudo em GitHub Releases.
-5. Confirme em `github.com/codisec/codisec-labs/releases` que os
+5. Confirme em `github.com/codisec-io/codisec-labs/releases` que os
    arquivos `codisec_<os>_<arch>.tar.gz`/`.zip` e `checksums.txt`
    apareceram.
 
 `site/public/install.sh` e `install.ps1` resolvem sempre a **última**
-release via `api.github.com/repos/codisec/codisec-labs/releases/latest`
+release via `api.github.com/repos/codisec-io/codisec-labs/releases/latest`
 — não precisa atualizar nada no site quando uma nova versão da CLI sai.
 
 ## 3. Checklist pós-deploy

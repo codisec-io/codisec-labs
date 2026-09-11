@@ -1,4 +1,4 @@
-module github.com/codisec/codisec-labs/cli
+module github.com/codisec-io/codisec-labs/cli
 
 go 1.27.1
 

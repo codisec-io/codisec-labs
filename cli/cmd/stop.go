@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/codisec/codisec-labs/cli/internal/dockerrun"
+	"github.com/codisec-io/codisec-labs/cli/internal/dockerrun"
 )
 
 func newStopCmd() *cobra.Command {

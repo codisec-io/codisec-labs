@@ -53,7 +53,7 @@ Pré-requisito: Node 22+ (100% Node — não precisa de Python pra
 buildar/rodar o site).
 
 ```bash
-git clone https://github.com/codisec/codisec-labs.git
+git clone https://github.com/codisec-io/codisec-labs.git
 cd codisec-labs/site
 npm install
 npm run dev
@@ -96,7 +96,7 @@ pela validação automática da GitHub Action
 (`.github/workflows/validate-labs.yml`) antes de ir pra produção.
 
 Quer sugerir um lab novo ou uma funcionalidade? Abra uma
-[Issue com o template Feature Request](https://github.com/codisec/codisec-labs/issues/new/choose) — não precisa saber programar.
+[Issue com o template Feature Request](https://github.com/codisec-io/codisec-labs/issues/new/choose) — não precisa saber programar.
 
 ## Deploy em produção
 
