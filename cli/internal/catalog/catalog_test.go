@@ -54,7 +54,7 @@ func TestFetchLabNotFound(t *testing.T) {
 
 func TestProductionBaseURLIsFixed(t *testing.T) {
 	c := NewClient()
-	if c.BaseURL != "https://codisec.com.br" {
-		t.Fatalf("NewClient() não deveria apontar para outro lugar que não codisec.com.br, veio %q", c.BaseURL)
+	if c.BaseURL != "https://labs.codisec.com.br" {
+		t.Fatalf("NewClient() não deveria apontar para outro lugar que não labs.codisec.com.br, veio %q", c.BaseURL)
 	}
 }

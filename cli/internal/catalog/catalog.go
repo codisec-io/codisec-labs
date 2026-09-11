@@ -22,7 +22,7 @@ import (
 )
 
 // ProductionBaseURL é a única origem que a CLI de fato usa em produção.
-const ProductionBaseURL = "https://codisec.com.br"
+const ProductionBaseURL = "https://labs.codisec.com.br"
 
 type Client struct {
 	BaseURL    string

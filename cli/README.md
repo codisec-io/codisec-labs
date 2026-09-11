@@ -2,7 +2,7 @@
 
 CLI que roda os labs de AppSec/DevSecOps/DevOps da Codisec **localmente**,
 no Docker do próprio usuário — o mesmo espírito do
-[GIRUS](https://girus.linuxtips.io). Ela fala só com `codisec.com.br`
+[GIRUS](https://girus.linuxtips.io). Ela fala só com `labs.codisec.com.br`
 (catálogo estático, leitura pública) e com o Docker local da máquina;
 nunca com nenhum backend nosso. Ver `docs/ARCHITECTURE.md` na raiz do
 repo para o desenho completo.
@@ -45,14 +45,14 @@ na máquina (Docker Desktop, no Windows/macOS).
 cli/
   main.go
   cmd/                 comandos cobra (list, info, start, validate, stop, reset)
-  internal/catalog/     busca catalog.json e labs/<id>.json em codisec.com.br
+  internal/catalog/     busca catalog.json e labs/<id>.json em labs.codisec.com.br
   internal/labspec/     structs que espelham labs/schema.json
   internal/dockerrun/   toda a interação com o Docker local
 ```
 
 ### Por que a origem do catálogo é fixa em código
 
-`internal/catalog.Client` sempre aponta pra `https://codisec.com.br` —
+`internal/catalog.Client` sempre aponta pra `https://labs.codisec.com.br` —
 de propósito, não existe flag nem variável de ambiente pra trocar isso.
 Se existisse, alguém poderia induzir um usuário a rodar `codisec lab
 start --catalog-url=...` (ou setar uma env var) apontando pra um
@@ -75,7 +75,7 @@ go test ./...                          # inclui testes de integração reais
 ```
 
 Não tem como testar `list`/`info`/`start`/`validate`/`reset` contra o
-catálogo de produção antes do site estar publicado em `codisec.com.br`
+catálogo de produção antes do site estar publicado em `labs.codisec.com.br`
 (ver `docs/CHECKLIST.md`) — durante o desenvolvimento, sirva
 `site/public/` localmente (`python3 -m http.server` dentro da pasta) e
 aponte manualmente `ProductionBaseURL` pra lá, só localmente, nunca

@@ -331,7 +331,7 @@ func (r *Runner) RunCommand(ctx context.Context, labID string, command string) (
 
 // StopAndRemove derruba e remove o container do lab. Só precisa do id
 // do lab — não faz nenhuma chamada de rede, funciona mesmo se
-// codisec.com.br estiver fora do ar.
+// labs.codisec.com.br estiver fora do ar.
 func (r *Runner) StopAndRemove(ctx context.Context, labID string) error {
 	name := labspec.ContainerName(labID)
 	containerID, err := r.findContainer(ctx, name)
