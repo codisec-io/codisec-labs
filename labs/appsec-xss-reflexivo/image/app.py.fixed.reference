@@ -1,0 +1,35 @@
+"""
+REFERÊNCIA — não é copiado pelo container em nenhum momento.
+Mostra a correção esperada da task 3 do lab.yaml.
+"""
+from flask import Flask, request, render_template_string
+
+app = Flask(__name__)
+
+TEMPLATE = """
+<html>
+  <head><title>Busca</title></head>
+  <body>
+    <h1>Resultados para: {{ q }}</h1>
+    <p>Nenhum resultado encontrado.</p>
+  </body>
+</html>
+"""
+
+
+@app.route("/search")
+def search():
+    q = request.args.get("q", "")
+    # CORRIGIDO: render_template_string usa o Jinja2, que escapa
+    # automaticamente qualquer valor inserido via {{ }} — < vira &lt;,
+    # > vira &gt;, etc.
+    return render_template_string(TEMPLATE, q=q)
+
+
+@app.route("/healthz")
+def healthz():
+    return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
