@@ -6,20 +6,44 @@ interface Props {
   category: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: string;
+  tags?: string[];
 }
 
-const { id, title, description, category, difficulty, duration } = Astro.props;
+const { id, title, description, category, difficulty, duration, tags } = Astro.props;
 
 const difficultyLabel: Record<string, string> = {
   beginner: 'iniciante',
   intermediate: 'intermediário',
   advanced: 'avançado',
 };
+
+const MAX_VISIBLE_TAGS = 3;
+const visibleTags = tags?.slice(0, MAX_VISIBLE_TAGS) ?? [];
+const hiddenTags = tags?.slice(MAX_VISIBLE_TAGS) ?? [];
+
+// Índice de busca da página /labs (title + description + tags) — só é
+// usado quando o card está dentro do catálogo com busca; nas outras
+// páginas (ex: "Labs em destaque" na home) o atributo fica ali sem uso.
+const searchIndex = [title, description, ...(tags ?? [])].join(' ').toLowerCase();
 ---
-<a href={`/labs/${id}`} class={`lab-card ${difficulty}`} data-category={category} data-difficulty={difficulty}>
+<a
+  href={`/labs/${id}`}
+  class={`lab-card ${difficulty}`}
+  data-category={category}
+  data-difficulty={difficulty}
+  data-search={searchIndex}
+>
   <div class="cat">{category}</div>
   <h3>{title}</h3>
   <p>{description}</p>
+  {tags && tags.length > 0 && (
+    <div class="tags">
+      {visibleTags.map((tag) => <span>{tag}</span>)}
+      {hiddenTags.length > 0 && (
+        <span title={hiddenTags.join(', ')}>+{hiddenTags.length}</span>
+      )}
+    </div>
+  )}
   <div class="lab-meta">
     <div class="diff-label">
       <span class={`diff-dot ${difficulty}`}></span>{difficultyLabel[difficulty]} · {duration}

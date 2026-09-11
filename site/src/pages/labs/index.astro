@@ -17,7 +17,7 @@ const difficultyLabel: Record<string, string> = {
 ---
 <BaseLayout
   title="Labs — Codisec"
-  description="Catálogo de labs práticos de AppSec, DevSecOps e DevOps. Filtre por categoria e dificuldade, e rode qualquer um localmente com a CLI."
+  description="Catálogo de labs práticos de AppSec, DevSecOps e DevOps. Busque, filtre por categoria e dificuldade, e rode qualquer um localmente com a CLI."
 >
   <section style="border-top:none;">
     <div class="section-head">
@@ -25,6 +25,13 @@ const difficultyLabel: Record<string, string> = {
     </div>
 
     <div class="lab-filters">
+      <input
+        type="search"
+        id="lab-search"
+        class="lab-search"
+        placeholder="Buscar labs... (Ctrl+K)"
+        aria-label="Buscar labs por nome, descrição ou tag"
+      />
       <select id="filter-category" aria-label="Filtrar por categoria">
         <option value="">Todas as categorias</option>
         {categories.map((cat) => <option value={cat}>{cat}</option>)}
@@ -44,6 +51,7 @@ const difficultyLabel: Record<string, string> = {
           category={lab.data.category}
           difficulty={lab.data.difficulty}
           duration={lab.data.duration}
+          tags={lab.data.tags}
         />
       ))}
     </div>
@@ -54,34 +62,99 @@ const difficultyLabel: Record<string, string> = {
 <script>
   // Filtro client-side puro: os cards já vêm renderizados no HTML do
   // build (Content Layer), aqui só escondemos/mostramos por data-attr —
-  // sem fetch, funciona mesmo sem JS (só sem o filtro interativo).
+  // sem fetch, funciona mesmo sem JS (só sem o filtro interativo). Por
+  // isso não há skeleton loader: não existe estado de carregamento
+  // assíncrono nesta página, os dados já estão todos no HTML desde o
+  // primeiro paint.
+  function debounce<T extends (...args: any[]) => void>(fn: T, ms: number): T {
+    let timer: ReturnType<typeof setTimeout>;
+    return ((...args: Parameters<T>) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), ms);
+    }) as T;
+  }
+
   function setupFilters() {
+    const searchInput = document.getElementById('lab-search') as HTMLInputElement | null;
     const categorySelect = document.getElementById('filter-category') as HTMLSelectElement | null;
     const difficultySelect = document.getElementById('filter-difficulty') as HTMLSelectElement | null;
     const grid = document.getElementById('lab-grid');
     const empty = document.getElementById('lab-empty');
-    if (!categorySelect || !difficultySelect || !grid || !empty) return;
+    if (!searchInput || !categorySelect || !difficultySelect || !grid || !empty) return;
 
-    const cards = Array.from(grid.querySelectorAll<HTMLElement>('.lab-card'));
+    // Evita anexar os listeners duas vezes se astro:page-load disparar
+    // pro mesmo DOM (ex: primeira carga com view transitions ativas).
+    if (grid.dataset.filtersInit === '1') return;
+    grid.dataset.filtersInit = '1';
+
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('.lab-card')).map((card) => ({
+      el: card,
+      searchText: (card.dataset.search ?? '').toLowerCase(),
+    }));
+
+    // Restaura o estado a partir da URL (?q=&category=&difficulty=) —
+    // aplica direto no primeiro paint, sem flash de "tudo visível" e
+    // depois filtrar.
+    const params = new URLSearchParams(window.location.search);
+    searchInput.value = params.get('q') ?? '';
+    categorySelect.value = params.get('category') ?? '';
+    difficultySelect.value = params.get('difficulty') ?? '';
+
+    function updateURL() {
+      const url = new URL(window.location.href);
+      const entries: [string, string][] = [
+        ['q', searchInput!.value.trim()],
+        ['category', categorySelect!.value],
+        ['difficulty', difficultySelect!.value],
+      ];
+      for (const [key, value] of entries) {
+        if (value) url.searchParams.set(key, value);
+        else url.searchParams.delete(key);
+      }
+      // replaceState, não pushState — filtrar não deveria poluir o
+      // histórico de navegação (voltar não deve significar "desfiltrar").
+      history.replaceState(history.state, '', url);
+    }
 
     function applyFilters() {
+      const query = searchInput!.value.trim().toLowerCase();
       const category = categorySelect!.value;
       const difficulty = difficultySelect!.value;
       let visibleCount = 0;
 
-      for (const card of cards) {
+      for (const { el, searchText } of cards) {
         const matches =
-          (!category || card.dataset.category === category) &&
-          (!difficulty || card.dataset.difficulty === difficulty);
-        card.hidden = !matches;
+          (!category || el.dataset.category === category) &&
+          (!difficulty || el.dataset.difficulty === difficulty) &&
+          (!query || searchText.includes(query));
+        el.hidden = !matches;
         if (matches) visibleCount++;
       }
 
       empty!.hidden = visibleCount > 0;
     }
 
-    categorySelect.addEventListener('change', applyFilters);
-    difficultySelect.addEventListener('change', applyFilters);
+    function onSearchOrFilterChange() {
+      applyFilters();
+      updateURL();
+    }
+
+    const debouncedSearchChange = debounce(onSearchOrFilterChange, 300);
+
+    searchInput.addEventListener('input', debouncedSearchChange);
+    categorySelect.addEventListener('change', onSearchOrFilterChange);
+    difficultySelect.addEventListener('change', onSearchOrFilterChange);
+
+    // Ctrl+K / Cmd+K foca a busca, de qualquer lugar da página.
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInput!.focus();
+        searchInput!.select();
+      }
+    });
+
+    applyFilters();
   }
 
   setupFilters();
