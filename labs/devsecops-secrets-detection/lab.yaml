@@ -26,7 +26,7 @@ tasks:
       - "Rode: `gitleaks detect --source . -v`"
       - "Observe que ele encontra pelo menos 2 achados: uma AWS key e uma senha de banco."
     validation:
-      command: "cd /app/repo && gitleaks detect --source . 2>&1 | grep -qi 'leaks found'"
+      command: "cd /app/repo && gitleaks detect --source ."
       expected_exit_code: 1
       success_message: "Scan rodou e confirmou a presença de secrets no repositório (gitleaks retorna exit code != 0 quando encontra algo, de propósito, pra quebrar o CI)."
       error_message: "Confira se está na pasta /app/repo."
@@ -67,4 +67,4 @@ tasks:
       error_message: "Rode o comando de log sugerido no passo anterior."
 
 recovery:
-  reset_command: "cp -r /app/repo.original/* /app/repo/ && git -C /app/repo checkout -- ."
+  reset_command: "rm -rf /app/repo && cp -r /app/repo.original /app/repo"
