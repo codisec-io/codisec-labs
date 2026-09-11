@@ -10,7 +10,7 @@ description: >
   isolado dentro do próprio container do lab — ver
   docs/SECURITY.md) porque o objetivo é você ter um Docker de verdade
   pra praticar, sem mexer no Docker da sua máquina.
-image: docker:24-dind
+image: ghcr.io/codisec-io/lab-docker-fundamentos:latest
 requires_privileged: true
 tags: [docker, fundamentos, containers]
 maintainers:
