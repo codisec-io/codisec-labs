@@ -1,8 +1,8 @@
 ---
 // Digitação do terminal do hero. Mostra o comando real do lab
 // appsec-idor-api (codisec lab start appsec-idor-api) e a saída que ele
-// produz quando a imagem publicada em ghcr.io/codisec/lab-flask-idor
-// existir (ainda não existe — ver image_published em catalog.json).
+// produz ao baixar a imagem publicada em
+// ghcr.io/codisec-io/lab-flask-idor (ver image_published em catalog.json).
 //
 // Efeito de máquina de escrever: linhas de comando (o que "alguém"
 // digita) aparecem caractere a caractere com jitter; linhas de saída
@@ -25,7 +25,7 @@
 
   const sequence: Segment[] = [
     { type: 'command', text: 'codisec lab start appsec-idor-api' },
-    { type: 'output', style: 'dim', text: 'Baixando ghcr.io/codisec/lab-flask-idor:latest...' },
+    { type: 'output', style: 'dim', text: 'Baixando ghcr.io/codisec-io/lab-flask-idor:latest...' },
     { type: 'output', style: 'dim', text: 'Subindo container local...' },
     { type: 'output', style: 'ok', text: '✓ Lab pronto. Terminal conectado.' },
     { type: 'blank' },

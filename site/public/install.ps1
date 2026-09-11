@@ -1,6 +1,6 @@
 # Instalador da CLI codisec (Windows, PowerShell nativo — sem WSL).
 #
-#   iwr https://codisec.com.br/install.ps1 -useb | iex
+#   iwr https://labs.codisec.com.br/install.ps1 -useb | iex
 #
 # Baixa o binário de uma GitHub Release, confere o checksum SHA-256
 # publicado junto (ver docs/SECURITY.md) antes de instalar, e adiciona

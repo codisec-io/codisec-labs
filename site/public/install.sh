@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Instalador da CLI codisec (Linux/macOS).
 #
-#   curl -sSL https://codisec.com.br/install.sh | bash
+#   curl -sSL https://labs.codisec.com.br/install.sh | bash
 #
 # Baixa o binário certo pra sua máquina de uma GitHub Release, confere
 # o checksum SHA-256 publicado junto (ver docs/SECURITY.md) antes de
