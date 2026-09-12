@@ -1,6 +1,6 @@
 ---
 title: "tfsec, checkov ou trivy: qual scanner de IaC faz sentido no seu pipeline"
-date: 2026-02-19
+date: 2026-07-29
 tags: [iac, terraform, tfsec, trivy, devsecops, ci-cd]
 excerpt: "Comparamos os três em cima de cenários reais de Terraform e de imagem Docker, achado por achado, pra decidir qual entra no seu CI sem virar ruído."
 author: "Equipe Codisec"

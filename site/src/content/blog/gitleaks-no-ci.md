@@ -1,6 +1,6 @@
 ---
 title: "O que muda no seu CI quando você começa a rodar gitleaks de verdade"
-date: 2026-02-05
+date: 2026-07-14
 tags: [secrets, gitleaks, git, ci-cd, devsecops]
 excerpt: "Da primeira PR quebrada até o time parar de commitar secret sem querer — o que esperar nas primeiras duas semanas."
 author: "Equipe Codisec"

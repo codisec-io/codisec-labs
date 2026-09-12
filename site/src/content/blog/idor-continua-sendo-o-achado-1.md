@@ -1,6 +1,6 @@
 ---
 title: "IDOR continua sendo o achado #1 em pentest de API — por que a gente ainda erra isso"
-date: 2026-02-28
+date: 2026-08-13
 tags: [idor, api, owasp-top10, broken-access-control]
 excerpt: "Checagem de autorização por objeto é simples de explicar e fácil de esquecer de implementar. Um raio-x de onde essa falha mora de verdade no código."
 author: "Equipe Codisec"
