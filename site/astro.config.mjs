@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // zero backend/servidor de aplicação nosso exposto pela internet.
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://codisec.com.br',
+  site: 'https://labs.codisec.com.br',
   output: 'static',
   integrations: [sitemap()]
 });
