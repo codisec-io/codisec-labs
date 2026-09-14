@@ -5,10 +5,9 @@ Site da Codisec, com duas frentes:
 1. **Blog** — artigos, notícias e novidades do mundo DevOps/AppSec.
 2. **Labs práticos** — laboratórios de AppSec, DevSecOps e DevOps. O
    site é o catálogo/vitrine; a execução do lab acontece **localmente**,
-   na máquina do usuário, via CLI + Docker, no mesmo modelo do
-   [GIRUS](https://girus.linuxtips.io) da LINUXtips. Isso significa zero
-   backend exposto: nada de containers, portas ou terminal remoto
-   acessíveis pela internet — ver `docs/ARCHITECTURE.md`.
+   na máquina do usuário, via CLI + Docker. Isso significa zero backend
+   exposto: nada de containers, portas ou terminal remoto acessíveis
+   pela internet — ver `docs/ARCHITECTURE.md`.
 
 Objetivo: baixar a barreira de entrada pra quem quer aprender essas áreas
 com recursos limitados — sem custo, sem precisar de máquina potente, sem
@@ -114,5 +113,4 @@ código na CLI.
 
 ## Licença
 
-GPL-3.0 (mesma linha do GIRUS) — qualquer modificação distribuída precisa
-continuar open-source.
+GPL-3.0 — qualquer modificação distribuída precisa continuar open-source.

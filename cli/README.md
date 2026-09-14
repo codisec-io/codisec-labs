@@ -1,8 +1,7 @@
 # codisec — CLI
 
 CLI que roda os labs de AppSec/DevSecOps/DevOps da Codisec **localmente**,
-no Docker do próprio usuário — o mesmo espírito do
-[GIRUS](https://girus.linuxtips.io). Ela fala só com `labs.codisec.com.br`
+no Docker do próprio usuário. Ela fala só com `labs.codisec.com.br`
 (catálogo estático, leitura pública) e com o Docker local da máquina;
 nunca com nenhum backend nosso. Ver `docs/ARCHITECTURE.md` na raiz do
 repo para o desenho completo.
@@ -22,8 +21,6 @@ repo para o desenho completo.
    o usuário talvez nem tenha no PATH, só o Docker Desktop).
 3. **Binário único estático**, sem runtime a instalar — combina com o
    modelo de `install.sh`/`install.ps1` baixando um único arquivo.
-4. Alinhamento com o GIRUS, citado como referência de arquitetura no
-   projeto original — facilita comparação e manutenção futura.
 
 ## Comandos
 

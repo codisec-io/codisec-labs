@@ -12,7 +12,7 @@ Para uma instância pessoal/estudo isso é aceitável. Para produção pública
 com muitos usuários desconhecidos, troque por uma das opções abaixo antes
 de expor a internet:
   1. gVisor (runsc) ou Kata Containers como runtime, isolando o kernel
-  2. Um cluster Kind/K3s dedicado por usuário, como o GIRUS original faz
+  2. Um cluster Kind/K3s dedicado por usuário
   3. Firecracker microVMs (abordagem usada por serviços tipo CodeSandbox)
 Veja docs/SECURITY.md.
 """

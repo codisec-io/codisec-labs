@@ -25,7 +25,7 @@ import docker_manager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("main")
 
-app = FastAPI(title="Girus AppSec Labs API")
+app = FastAPI(title="Codisec AppSec Labs API")
 
 # Em produção, troque "*" pelo domínio real do frontend
 app.add_middleware(

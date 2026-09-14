@@ -11,8 +11,8 @@ dá, na prática, controle root da máquina pra quem comprometer o backend.
 Detalhes em `docs/SECURITY.md` na raiz do projeto.
 
 **O modelo atual** é catálogo estático + execução local (CLI + Docker do
-próprio usuário, como o GIRUS). Veja `docs/CLAUDE_CODE_PROMPT.md` na
-raiz do projeto para a especificação completa da implementação atual.
+próprio usuário). Veja `docs/CLAUDE_CODE_PROMPT.md` na raiz do projeto
+para a especificação completa da implementação atual.
 
 Este código fica aqui só como referência histórica (o schema de
 `lab.yaml`, por exemplo, nasceu aqui e continua o mesmo). Não faz parte

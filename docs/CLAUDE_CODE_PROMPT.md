@@ -72,8 +72,7 @@ decida a estrutura de rotas, mas justifique) precisa ter:
   descrição/dificuldade/duração, e para cada lab mostra o comando exato
   que o usuário roda **na própria máquina** para executá-lo.
 - Uma **CLI** (o usuário instala localmente, ex: `curl -sSL
-  https://labs.codisec.com.br/install.sh | bash`, no mesmo espírito do
-  instalador do GIRUS) que:
+  https://labs.codisec.com.br/install.sh | bash`) que:
   - Lê um catálogo estático (`catalog.json` ou `index.yaml`, hospedado
     como arquivo estático junto do site ou em GitHub raw) — leitura
     pública, sem autenticação, sem lógica de servidor por trás.
@@ -136,10 +135,9 @@ explicitamente:
    partir dos `lab.yaml` — crie uma nova função/script
    `scripts/build_catalog.py` que lê todos os labs válidos e escreve um
    `catalog.json` na pasta do site estático.
-5. **CLI nova** (pasta `cli/`): construa em Go (mesma stack do GIRUS,
-   facilita comparação/manutenção) ou Python com PyInstaller, sua
-   escolha — mas justifique a escolha em `cli/README.md`. Comandos
-   mínimos:
+5. **CLI nova** (pasta `cli/`): construa em Go ou Python com
+   PyInstaller, sua escolha — mas justifique a escolha em
+   `cli/README.md`. Comandos mínimos:
    ```
    codisec lab list
    codisec lab info <id>
