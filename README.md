@@ -16,7 +16,7 @@ precisar já saber configurar Kubernetes antes de começar a aprender.
 
 ## Como funciona
 
-1. O usuário instala a CLI (`curl -sSL https://codisec.com.br/install.sh
+1. O usuário instala a CLI (`curl -sSL https://labs.codisec.com.br/install.sh
    | bash`, ou `install.ps1` no Windows).
 2. Acessa o site e escolhe um lab no catálogo (`/labs`, filtra por
    categoria e dificuldade).
@@ -36,7 +36,7 @@ precisar já saber configurar Kubernetes antes de começar a aprender.
 ## Arquitetura
 
 ```
-Navegador → codisec.com.br (Astro, Cloudflare Pages, só leitura)
+Navegador → labs.codisec.com.br (Astro, Cloudflare Pages, só leitura)
                     │ copia o comando
                     ▼
         CLI local (codisec) → Docker local do usuário → container do lab
@@ -66,7 +66,7 @@ partir dos `labs/*/lab.yaml`.
 
 ## Rodando a CLI localmente (dev)
 
-Pré-requisito: Go 1.23+ e Docker instalado e rodando.
+Pré-requisito: Go 1.27+ e Docker instalado e rodando.
 
 ```bash
 cd cli
@@ -81,11 +81,13 @@ como testar).
 
 11 labs validados em `labs/*/lab.yaml` (appsec, devsecops, devops,
 níveis iniciante/intermediário) — `codisec lab list` ou
-[`/labs`](https://codisec.com.br/labs) no site mostram o catálogo
-completo e atualizado. Nenhuma das imagens Docker (`ghcr.io/codisec/lab-*`)
-foi publicada ainda — é o próximo passo (ver `docs/CHECKLIST.md`, Fase 2).
-Uma exceção: o lab `devops-docker-fundamentos` usa `docker:24-dind`, uma
-imagem pública já pullável hoje.
+[`/labs`](https://labs.codisec.com.br/labs) no site mostram o catálogo
+completo e atualizado. As 11 imagens Docker já estão publicadas e
+públicas em `ghcr.io/codisec-io/lab-*`. Três labs (`devops-docker-fundamentos`,
+`devsecops-container-scan-trivy`, `devops-cicd-local-com-act`) exigem
+modo privilegiado (Docker-in-Docker) pra funcionar — a CLI avisa e pede
+confirmação antes de subir esses containers (ver
+[docs/SECURITY.md](docs/SECURITY.md)).
 
 ## Contribuindo
 
